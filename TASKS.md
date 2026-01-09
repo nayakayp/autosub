@@ -8,12 +8,12 @@
 ## Phase 1: Foundation
 
 **Target: Week 1**
-**Status:** 🔴 Not Started
+**Status:** 🟢 Complete
 
 ### 1.1 Project Initialization
 
-- [ ] **1.1.1** Run `cargo new autosub --bin`
-- [ ] **1.1.2** Create directory structure:
+- [x] **1.1.1** Run `cargo new autosub --bin`
+- [x] **1.1.2** Create directory structure:
   ```
   src/
   ├── main.rs
@@ -25,63 +25,63 @@
   ├── translate/
   └── subtitle/
   ```
-- [ ] **1.1.3** Create empty `mod.rs` files in each subdirectory
-- [ ] **1.1.4** Setup `.gitignore` for Rust project
-- [ ] **1.1.5** Create initial `README.md`
+- [x] **1.1.3** Create empty `mod.rs` files in each subdirectory
+- [x] **1.1.4** Setup `.gitignore` for Rust project
+- [x] **1.1.5** Create initial `README.md`
 
 ### 1.2 Dependencies Setup (Cargo.toml)
 
-- [ ] **1.2.1** Add async runtime:
+- [x] **1.2.1** Add async runtime:
   ```toml
   tokio = { version = "1", features = ["full"] }
   ```
-- [ ] **1.2.2** Add CLI framework:
+- [x] **1.2.2** Add CLI framework:
   ```toml
   clap = { version = "4", features = ["derive"] }
   ```
-- [ ] **1.2.3** Add HTTP client:
+- [x] **1.2.3** Add HTTP client:
   ```toml
   reqwest = { version = "0.12", features = ["json", "multipart", "stream"] }
   ```
-- [ ] **1.2.4** Add serialization:
+- [x] **1.2.4** Add serialization:
   ```toml
   serde = { version = "1", features = ["derive"] }
   serde_json = "1"
   ```
-- [ ] **1.2.5** Add audio processing:
+- [x] **1.2.5** Add audio processing:
   ```toml
   hound = "3.5"
   ```
-- [ ] **1.2.6** Add error handling:
+- [x] **1.2.6** Add error handling:
   ```toml
   anyhow = "1"
   thiserror = "2"
   ```
-- [ ] **1.2.7** Add logging:
+- [x] **1.2.7** Add logging:
   ```toml
   tracing = "0.1"
   tracing-subscriber = { version = "0.3", features = ["env-filter"] }
   ```
-- [ ] **1.2.8** Add progress bars:
+- [x] **1.2.8** Add progress bars:
   ```toml
   indicatif = "0.17"
   ```
-- [ ] **1.2.9** Add config file support:
+- [x] **1.2.9** Add config file support:
   ```toml
   toml = "0.8"
   dirs = "5"
   ```
-- [ ] **1.2.10** Add dev dependencies:
+- [x] **1.2.10** Add dev dependencies:
   ```toml
   [dev-dependencies]
   tokio-test = "0.4"
   wiremock = "0.6"
   ```
-- [ ] **1.2.11** Run `cargo build` to verify dependencies resolve
+- [x] **1.2.11** Run `cargo build` to verify dependencies resolve
 
 ### 1.3 Error Handling Module (`src/error.rs`)
 
-- [ ] **1.3.1** Define custom error enum with `thiserror`:
+- [x] **1.3.1** Define custom error enum with `thiserror`:
   ```rust
   #[derive(thiserror::Error, Debug)]
   pub enum AutosubError {
@@ -99,12 +99,12 @@
       Io(#[from] std::io::Error),
   }
   ```
-- [ ] **1.3.2** Create type alias: `pub type Result<T> = std::result::Result<T, AutosubError>;`
-- [ ] **1.3.3** Export from `lib.rs`
+- [x] **1.3.2** Create type alias: `pub type Result<T> = std::result::Result<T, AutosubError>;`
+- [x] **1.3.3** Export from `lib.rs`
 
 ### 1.4 Configuration Module (`src/config.rs`)
 
-- [ ] **1.4.1** Define `Config` struct:
+- [x] **1.4.1** Define `Config` struct:
   ```rust
   pub struct Config {
       pub openai_api_key: Option<String>,
@@ -114,20 +114,20 @@
       pub concurrency: usize,
   }
   ```
-- [ ] **1.4.2** Define `Provider` enum: `Whisper`, `Gemini`
-- [ ] **1.4.3** Define `OutputFormat` enum: `Srt`, `Vtt`, `Json`
-- [ ] **1.4.4** Implement `Config::load()`:
-  - [ ] Read from environment variables first
-  - [ ] Fall back to config file `~/.config/autosub/config.toml`
-  - [ ] Apply defaults for missing values
-- [ ] **1.4.5** Implement `Config::validate()`:
-  - [ ] Check API key exists for selected provider
-  - [ ] Validate concurrency > 0
-- [ ] **1.4.6** Add unit tests for config loading
+- [x] **1.4.2** Define `Provider` enum: `Whisper`, `Gemini`
+- [x] **1.4.3** Define `OutputFormat` enum: `Srt`, `Vtt`, `Json`
+- [x] **1.4.4** Implement `Config::load()`:
+  - [x] Read from environment variables first
+  - [x] Fall back to config file `~/.config/autosub/config.toml`
+  - [x] Apply defaults for missing values
+- [x] **1.4.5** Implement `Config::validate()`:
+  - [x] Check API key exists for selected provider
+  - [x] Validate concurrency > 0
+- [x] **1.4.6** Add unit tests for config loading
 
 ### 1.5 CLI Interface (`src/main.rs`)
 
-- [ ] **1.5.1** Define CLI args struct with clap derive:
+- [x] **1.5.1** Define CLI args struct with clap derive:
   ```rust
   #[derive(Parser)]
   #[command(name = "autosub")]
@@ -165,14 +165,14 @@
       verbose: bool,
   }
   ```
-- [ ] **1.5.2** Implement argument validation:
-  - [ ] Check input file exists
-  - [ ] Validate format is one of: srt, vtt, json
-  - [ ] Validate provider is one of: whisper, gemini
-  - [ ] Validate language codes
-- [ ] **1.5.3** Setup tracing subscriber based on `--verbose`
-- [ ] **1.5.4** Derive output path from input if not specified (e.g., `video.mp4` → `video.srt`)
-- [ ] **1.5.5** Create async main with tokio:
+- [x] **1.5.2** Implement argument validation:
+  - [x] Check input file exists
+  - [x] Validate format is one of: srt, vtt, json
+  - [x] Validate provider is one of: whisper, gemini
+  - [ ] Validate language codes (deferred to Phase 5)
+- [x] **1.5.3** Setup tracing subscriber based on `--verbose`
+- [x] **1.5.4** Derive output path from input if not specified (e.g., `video.mp4` → `video.srt`)
+- [x] **1.5.5** Create async main with tokio:
   ```rust
   #[tokio::main]
   async fn main() -> anyhow::Result<()> {
@@ -180,17 +180,17 @@
       // ...
   }
   ```
-- [ ] **1.5.6** Test CLI parsing with various argument combinations
+- [x] **1.5.6** Test CLI parsing with various argument combinations
 
 ### 1.6 Logging Setup
 
-- [ ] **1.6.1** Create `init_logging(verbose: bool)` function
-- [ ] **1.6.2** Configure tracing-subscriber with:
-  - [ ] RUST_LOG env var support
-  - [ ] JSON format option for structured logs
-  - [ ] Timestamp formatting
-- [ ] **1.6.3** Add colored output for terminal
-- [ ] **1.6.4** Test logging at different levels
+- [x] **1.6.1** Create `init_logging(verbose: bool)` function
+- [x] **1.6.2** Configure tracing-subscriber with:
+  - [x] RUST_LOG env var support
+  - [ ] JSON format option for structured logs (deferred)
+  - [x] Timestamp formatting
+- [x] **1.6.3** Add colored output for terminal
+- [x] **1.6.4** Test logging at different levels
 
 ---
 
