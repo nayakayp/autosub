@@ -562,3 +562,35 @@ Created a comprehensive cross-platform install script (`install.sh`) for autosub
 - Binary naming follows release workflow: `autosub-{os}-{arch}`
 - Checksums downloaded from `checksums.txt` in GitHub release
 - Gracefully skips checksum verification if checksums file unavailable
+
+---
+
+## Session 14 - 2026-01-09 ~18:57 UTC (Install Script Repo Update)
+
+### Status: COMPLETED
+
+**Tasks Attempted:**
+- Update install.sh REPO variable — ✅ Success
+
+**Summary:**
+Updated install.sh with the correct GitHub repository path (`nayakayp/autosub`) instead of the placeholder `yourusername/autosub`. Verified all 131 tests pass and clippy is clean. All major phases (1-6) are complete.
+
+### What Works Now
+- `cargo build` compiles successfully
+- `cargo test` runs 131 tests, all passing
+- `cargo clippy` has no warnings
+- `install.sh` now has correct repo URL for downloads
+
+### Issues Encountered
+- None
+
+### Next Steps for Next Agent
+1. **Push to GitHub**: Set up git remote and push the codebase
+2. **Create first release**: Tag v0.1.0 to trigger release workflow
+3. **Phase 6.5.4 (Optional)**: Homebrew formula
+4. **Phase 6.5.5 (Optional)**: Publish to crates.io
+
+### Technical Notes
+- Updated both the REPO variable and curl URL in install.sh header
+- All phases (1-6) are marked complete in TASKS.md
+- Remaining tasks are optional/deferred items

@@ -3,7 +3,7 @@
 # Autosub Installer
 # 
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/yourusername/autosub/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/nayakayp/autosub/main/install.sh | bash
 #
 # Or download and run:
 #   ./install.sh
@@ -17,7 +17,7 @@
 set -e
 
 # Configuration
-REPO="yourusername/autosub"  # TODO: Update with actual GitHub repo
+REPO="nayakayp/autosub"  # UPDATE: Set to your actual GitHub repo (e.g., "owner/repo")
 BINARY_NAME="autosub"
 DEFAULT_INSTALL_DIR="/usr/local/bin"
 
