@@ -845,15 +845,15 @@
 
 ### 6.4 Documentation
 
-- [ ] **6.4.1** Complete README.md:
+- [x] **6.4.1** Complete README.md:
   - Installation instructions
   - Quick start guide
   - Configuration options
   - Examples
 - [x] **6.4.2** Add `--help` documentation for all flags (via clap derive)
-- [ ] **6.4.3** Add CONTRIBUTING.md
-- [ ] **6.4.4** Add LICENSE (MIT or Apache-2.0)
-- [ ] **6.4.5** Add rustdoc comments to public API
+- [x] **6.4.3** Add CONTRIBUTING.md
+- [x] **6.4.4** Add LICENSE (MIT or Apache-2.0)
+- [ ] **6.4.5** Add rustdoc comments to public API (deferred)
 
 ### 6.5 Distribution
 

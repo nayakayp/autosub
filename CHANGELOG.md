@@ -306,3 +306,45 @@ Created comprehensive integration tests and mock API tests for the autosub CLI. 
 - Mock tests validate client creation and configuration without hitting real APIs
 - Tests cover edge cases: empty segments, very short segments, unicode text, overlapping timestamps, long text splitting
 - All tests are self-contained and don't require external dependencies like FFmpeg or API keys
+
+---
+
+## Session 8 - 2026-01-10 ~23:00 UTC (Documentation)
+
+### Status: COMPLETED
+
+**Tasks Attempted:**
+- 6.4.1: Complete README.md — ✅ Success
+- 6.4.3: Add CONTRIBUTING.md — ✅ Success
+- 6.4.4: Add LICENSE — ✅ Success
+
+**Summary:**
+Completed documentation tasks for Phase 6.4. Created comprehensive README.md with installation instructions, usage examples, CLI reference, troubleshooting guide, and API pricing. Added MIT LICENSE file. Created CONTRIBUTING.md with development setup, code style guidelines, and PR process. Build and clippy remain clean. All 121 tests continue to pass.
+
+### What Works Now
+- `cargo build` compiles successfully
+- `cargo test` runs 121 tests, all passing
+- `cargo clippy` has no warnings
+- README.md now includes:
+  - Full installation instructions
+  - API key setup for both providers
+  - Usage examples with --dry-run and --force flags
+  - CLI reference table
+  - Troubleshooting section
+  - API pricing reference
+- LICENSE (MIT) added
+- CONTRIBUTING.md with full development guide
+
+### Issues Encountered
+- API keys not available in shell environment for real API testing. This remains a limitation for end-to-end testing.
+
+### Next Steps for Next Agent
+1. **Real API testing**: Test with actual API keys when available
+2. **Phase 6.5.1**: Setup GitHub Actions CI
+3. **Phase 5** (Optional): Implement translation support
+4. **Phase 6.4.5** (Optional): Add rustdoc comments to public API
+
+### Technical Notes
+- README includes new --dry-run and --force flags added in Session 6
+- CONTRIBUTING.md explains project structure and how to add new transcription providers
+- MIT license chosen for maximum permissiveness
