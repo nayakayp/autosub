@@ -769,11 +769,11 @@
 ## Phase 5: Translation (Optional)
 
 **Target: Week 5**
-**Status:** 🔴 Not Started
+**Status:** 🟢 Complete
 
 ### 5.1 Translator Trait (`src/translate/mod.rs`)
 
-- [ ] **5.1.1** Define trait:
+- [x] **5.1.1** Define trait:
   ```rust
   #[async_trait]
   pub trait Translator: Send + Sync {
@@ -783,19 +783,19 @@
   }
   ```
 
-### 5.2 Google Translate (`src/translate/google.rs`)
+### 5.2 Google Translate (`src/translate/gemini.rs`)
 
-- [ ] **5.2.1** Implement using Gemini API (already have key)
-- [ ] **5.2.2** Build translation prompt
-- [ ] **5.2.3** Batch translations for efficiency
-- [ ] **5.2.4** Preserve formatting and line breaks
-- [ ] **5.2.5** Handle translation errors gracefully
+- [x] **5.2.1** Implement using Gemini API (already have key)
+- [x] **5.2.2** Build translation prompt
+- [x] **5.2.3** Batch translations for efficiency
+- [x] **5.2.4** Preserve formatting and line breaks
+- [x] **5.2.5** Handle translation errors gracefully
 
 ### 5.3 Integration
 
-- [ ] **5.3.1** Add `--translate` flag handling in main
-- [ ] **5.3.2** Translate after transcription, before formatting
-- [ ] **5.3.3** Update metadata with target language
+- [x] **5.3.1** Add `--translate` flag handling in main
+- [x] **5.3.2** Translate after transcription, before formatting
+- [x] **5.3.3** Update metadata with target language
 
 ---
 

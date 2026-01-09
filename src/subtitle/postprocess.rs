@@ -148,7 +148,7 @@ fn smart_split(text: &str, max_length: usize) -> Vec<String> {
     while !remaining.is_empty() {
         // Count characters, not bytes, for proper UTF-8 handling
         let char_count = remaining.chars().count();
-        
+
         if char_count <= max_length {
             result.push(remaining.trim().to_string());
             break;
@@ -160,7 +160,7 @@ fn smart_split(text: &str, max_length: usize) -> Vec<String> {
             .nth(max_length)
             .map(|(i, _)| i)
             .unwrap_or(remaining.len());
-        
+
         // Find best split point within max_length characters
         let search_range = &remaining[..byte_limit];
 

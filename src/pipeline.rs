@@ -6,6 +6,7 @@ use crate::config::{Config, OutputFormat, Provider};
 use crate::error::{AutosubError, Result};
 use crate::subtitle::{convert_with_defaults, create_formatter, PostProcessConfig, SubtitleEntry};
 use crate::transcribe::{GeminiClient, Transcriber, TranscriptionOrchestrator, WhisperClient};
+use crate::translate::create_translator;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -57,6 +58,8 @@ pub struct PipelineStats {
     pub extraction_time: Duration,
     /// Time taken for transcription.
     pub transcription_time: Duration,
+    /// Time taken for translation (if performed).
+    pub translation_time: Option<Duration>,
     /// Number of audio chunks processed.
     pub chunks_processed: usize,
     /// Number of subtitle entries generated.
@@ -65,6 +68,8 @@ pub struct PipelineStats {
     pub audio_duration: Duration,
     /// Provider used for transcription.
     pub provider: String,
+    /// Target language for translation (if performed).
+    pub translated_to: Option<String>,
 }
 
 /// Result of the subtitle generation pipeline.
@@ -326,9 +331,92 @@ pub async fn generate_subtitles_with_cancel(
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // Stage 4: Subtitle Generation
+    // Stage 4: Translation (Optional)
     // ═══════════════════════════════════════════════════════════════════════
-    info!("Stage 4/4: Generating {} subtitles", pipeline_config.format);
+    let mut translation_time: Option<Duration> = None;
+    let mut translated_to: Option<String> = None;
+
+    let mut segments = transcription_result.segments.clone();
+
+    if let Some(ref target_lang) = pipeline_config.translate_to {
+        info!("Stage 4/5: Translating to {}", target_lang);
+        let translation_start = Instant::now();
+
+        let translation_pb = multi_progress.as_ref().map(|mp| {
+            let pb = mp.add(ProgressBar::new(segments.len() as u64));
+            pb.set_style(
+                ProgressStyle::default_bar()
+                    .template("{spinner:.green} [{bar:40.cyan/blue}] {pos}/{len} {msg}")
+                    .unwrap()
+                    .progress_chars("█▓░"),
+            );
+            pb.set_message("Translating...");
+            pb
+        });
+
+        // Create translator using Gemini API key
+        let translator = create_translator(config.gemini_api_key.as_deref())?;
+
+        // Translate in batches for efficiency
+        let batch_size = 10;
+        let mut translated_segments = Vec::with_capacity(segments.len());
+
+        for batch in segments.chunks(batch_size) {
+            // Check for cancellation
+            if cancelled.load(Ordering::Relaxed) {
+                return Err(AutosubError::Transcription(
+                    "Pipeline cancelled during translation".to_string(),
+                ));
+            }
+
+            let texts: Vec<&str> = batch.iter().map(|s| s.text.as_str()).collect();
+            let translations = translator.translate_batch(&texts, target_lang).await?;
+
+            for (segment, translated_text) in batch.iter().zip(translations.into_iter()) {
+                let mut new_segment = segment.clone();
+                new_segment.text = translated_text;
+                translated_segments.push(new_segment);
+
+                if let Some(ref pb) = translation_pb {
+                    pb.inc(1);
+                }
+            }
+        }
+
+        segments = translated_segments;
+        translation_time = Some(translation_start.elapsed());
+        translated_to = Some(target_lang.clone());
+
+        if let Some(pb) = translation_pb {
+            pb.finish_with_message(format!("✓ Translated to {}", target_lang));
+        }
+
+        info!(
+            "Translation complete: {} segments in {:.2}s",
+            segments.len(),
+            translation_time.unwrap().as_secs_f64()
+        );
+    }
+
+    // Check for cancellation
+    if cancelled.load(Ordering::Relaxed) {
+        return Err(AutosubError::Transcription(
+            "Pipeline cancelled".to_string(),
+        ));
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Stage 5: Subtitle Generation
+    // ═══════════════════════════════════════════════════════════════════════
+    let stage_num = if pipeline_config.translate_to.is_some() {
+        "5/5"
+    } else {
+        "4/4"
+    };
+    info!(
+        "Stage {}: Generating {} subtitles",
+        stage_num, pipeline_config.format
+    );
 
     let subtitle_pb = multi_progress.as_ref().map(|mp| {
         let pb = mp.add(ProgressBar::new_spinner());
@@ -344,9 +432,9 @@ pub async fn generate_subtitles_with_cancel(
 
     // Convert transcript to subtitle entries with post-processing
     let subtitle_entries = if pipeline_config.post_process.is_some() {
-        convert_with_defaults(transcription_result.segments.clone())
+        convert_with_defaults(segments)
     } else {
-        crate::subtitle::quick_convert(transcription_result.segments.clone())
+        crate::subtitle::quick_convert(segments)
     };
 
     // Format subtitles
@@ -372,10 +460,12 @@ pub async fn generate_subtitles_with_cancel(
         total_time,
         extraction_time,
         transcription_time,
+        translation_time,
         chunks_processed: transcription_stats.successful_chunks,
         subtitle_entries: subtitle_entries.len(),
         audio_duration,
         provider: pipeline_config.provider.to_string(),
+        translated_to,
     };
 
     let detected_language = if transcription_result.language != pipeline_config.language
@@ -404,6 +494,9 @@ pub fn print_summary(result: &PipelineResult) {
     println!("  Output:     {}", result.output_path.display());
     println!("  Entries:    {}", result.stats.subtitle_entries);
     println!("  Provider:   {}", result.stats.provider);
+    if let Some(ref target_lang) = result.stats.translated_to {
+        println!("  Translated: {}", target_lang);
+    }
     println!(
         "  Duration:   {:.1}s audio",
         result.stats.audio_duration.as_secs_f64()
@@ -419,6 +512,9 @@ pub fn print_summary(result: &PipelineResult) {
         result.stats.transcription_time.as_secs_f64(),
         result.stats.chunks_processed
     );
+    if let Some(translation_time) = result.stats.translation_time {
+        println!("    Translate:   {:.2}s", translation_time.as_secs_f64());
+    }
     println!(
         "    Total:       {:.2}s",
         result.stats.total_time.as_secs_f64()
@@ -455,13 +551,33 @@ mod tests {
             total_time: Duration::from_secs(30),
             extraction_time: Duration::from_secs(5),
             transcription_time: Duration::from_secs(20),
+            translation_time: None,
             chunks_processed: 5,
             subtitle_entries: 50,
             audio_duration: Duration::from_secs(300),
             provider: "whisper".to_string(),
+            translated_to: None,
         };
 
         assert_eq!(stats.chunks_processed, 5);
         assert_eq!(stats.subtitle_entries, 50);
+    }
+
+    #[test]
+    fn test_pipeline_stats_with_translation() {
+        let stats = PipelineStats {
+            total_time: Duration::from_secs(35),
+            extraction_time: Duration::from_secs(5),
+            transcription_time: Duration::from_secs(20),
+            translation_time: Some(Duration::from_secs(5)),
+            chunks_processed: 5,
+            subtitle_entries: 50,
+            audio_duration: Duration::from_secs(300),
+            provider: "gemini".to_string(),
+            translated_to: Some("es".to_string()),
+        };
+
+        assert!(stats.translation_time.is_some());
+        assert_eq!(stats.translated_to, Some("es".to_string()));
     }
 }

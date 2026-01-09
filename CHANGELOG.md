@@ -479,3 +479,43 @@ Successfully completed end-to-end API testing with both Gemini and Whisper provi
 - Post-processing (segment merging, line splitting) works correctly
 - JSON output includes both raw timestamps (float) and formatted timestamps (HH:MM:SS.mmm)
 - Transcription quality is good for Japanese anime-style dialogue
+
+---
+
+## Session 12 - 2026-01-10 ~18:41 UTC (Translation Support)
+
+### Status: COMPLETED
+
+**Tasks Attempted:**
+- 5.1.1: Translator trait definition — ✅ Success
+- 5.2.1-5.2.5: Gemini-based translation implementation — ✅ Success
+- 5.3.1-5.3.3: Pipeline integration — ✅ Success
+
+**Summary:**
+Completed Phase 5 (Translation Support). Implemented a Gemini-based translator using the generative AI API, with batch translation for efficiency. Integrated translation into the pipeline between transcription and subtitle generation. Tested end-to-end with Japanese audio translated to English. All 131 tests pass (10 new tests added) and clippy is clean.
+
+### What Works Now
+- `cargo build` compiles successfully
+- `cargo test` runs 131 tests, all passing
+- `cargo clippy` has no warnings
+- **Translation works end-to-end:**
+  - `cargo run -- sample.mp4 -o output.srt --provider gemini --language ja --translate en`
+- `GeminiTranslator` with batch translation support
+- Translator trait with factory function
+- Pipeline shows translation timing in summary
+- Supports 38+ languages with human-readable names in prompts
+
+### Issues Encountered
+- None significant. Minor fixes for Rust lifetime issues and error type usage.
+
+### Next Steps for Next Agent
+1. **Phase 6.5.3-6.5.5 (Optional)**: Install script, Homebrew formula, crates.io publish
+2. **Phase 6.4.5 (Optional)**: Add rustdoc comments to public API
+3. **Enhancement**: Add OpenAI GPT translation as alternative provider
+
+### Technical Notes
+- Translation uses Gemini 2.0 Flash model for speed and cost-efficiency
+- Batch translation sends up to 10 texts per API call with numbered format parsing
+- Translation stage added between transcription and subtitle generation (Stage 4/5)
+- Pipeline summary now shows translation time when `--translate` is used
+- `PipelineStats` extended with `translation_time` and `translated_to` fields
