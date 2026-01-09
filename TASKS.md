@@ -866,7 +866,7 @@
   - Build release binaries
   - Create GitHub release
   - Upload artifacts
-- [ ] **6.5.3** Create install script
+- [x] **6.5.3** Create install script
 - [ ] **6.5.4** Optional: Homebrew formula
 - [ ] **6.5.5** Optional: Publish to crates.io
 

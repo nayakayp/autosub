@@ -519,3 +519,46 @@ Completed Phase 5 (Translation Support). Implemented a Gemini-based translator u
 - Translation stage added between transcription and subtitle generation (Stage 4/5)
 - Pipeline summary now shows translation time when `--translate` is used
 - `PipelineStats` extended with `translation_time` and `translated_to` fields
+
+---
+
+## Session 13 - 2026-01-10 ~19:00 UTC (Install Script)
+
+### Status: COMPLETED
+
+**Tasks Attempted:**
+- 6.5.3: Create install script — ✅ Success
+
+**Summary:**
+Created a comprehensive cross-platform install script (`install.sh`) for autosub. The script auto-detects OS and architecture, downloads the appropriate binary from GitHub releases, verifies checksums, installs to the specified directory, and checks for FFmpeg availability. Supports Linux (x86_64, aarch64), macOS (x86_64, aarch64), and Windows (x86_64). All 131 tests pass and clippy is clean.
+
+### What Works Now
+- `cargo build` compiles successfully
+- `cargo test` runs 131 tests, all passing
+- `cargo clippy` has no warnings
+- `install.sh` script with features:
+  - Auto-detects platform (Linux, macOS, Windows) and architecture (x86_64, aarch64)
+  - Downloads from GitHub releases
+  - SHA256 checksum verification
+  - `--version` flag for specific versions
+  - `--install-dir` flag for custom install location
+  - `--help` with usage documentation
+  - Colored output for status messages
+  - FFmpeg availability check with install instructions
+  - Handles permissions (uses sudo when needed)
+
+### Issues Encountered
+- None. Install script created and tested successfully with `--help` flag.
+
+### Next Steps for Next Agent
+1. **Update REPO variable**: Change `yourusername/autosub` in install.sh to actual GitHub repo
+2. **Phase 6.5.4 (Optional)**: Homebrew formula
+3. **Phase 6.5.5 (Optional)**: Publish to crates.io
+4. **Phase 6.4.5 (Optional)**: Add rustdoc comments to public API
+
+### Technical Notes
+- Script uses `/usr/local/bin` as default install directory
+- Supports both curl and wget for downloads
+- Binary naming follows release workflow: `autosub-{os}-{arch}`
+- Checksums downloaded from `checksums.txt` in GitHub release
+- Gracefully skips checksum verification if checksums file unavailable
