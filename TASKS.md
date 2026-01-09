@@ -802,7 +802,7 @@
 ## Phase 6: Integration & Polish
 
 **Target: Week 6**
-**Status:** 🟡 In Progress
+**Status:** 🟢 Complete
 
 ### 6.1 Pipeline Orchestration (`src/pipeline.rs`)
 
@@ -833,9 +833,9 @@
 ### 6.3 Testing
 
 - [x] **6.3.1** Add integration tests with sample files
-- [ ] **6.3.2** Add end-to-end test (requires API keys) — ⚠️ Pipeline verified working, awaiting valid keys
-- [ ] **6.3.3** Test with various input formats — ⚠️ Awaiting valid API keys
-- [ ] **6.3.4** Test with different languages — ⚠️ Awaiting valid API keys
+- [x] **6.3.2** Add end-to-end test (requires API keys) — ✅ Tested with Gemini and Whisper
+- [x] **6.3.3** Test with various input formats — ✅ SRT, VTT, JSON all working
+- [x] **6.3.4** Test with different languages — ✅ Japanese (ja) tested successfully
 - [x] **6.3.5** Test edge cases:
   - Empty audio
   - Very short audio (<1s)

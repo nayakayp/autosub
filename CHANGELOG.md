@@ -436,3 +436,46 @@ Verified the entire CLI pipeline works correctly end-to-end. Tested with both Ge
 - Whisper retry: 3 attempts with 1s, 2s delays (exponential backoff)
 - Gemini uses inline audio data for files < 20MB
 - Error messages include full API response for debugging
+
+---
+
+## Session 11 - 2026-01-10 ~18:25 UTC (End-to-End Testing Success)
+
+### Status: COMPLETED
+
+**Tasks Attempted:**
+- 6.3.2: End-to-end API testing with sample.mp4 — ✅ Success
+- 6.3.3: Test with various output formats — ✅ Success
+- 6.3.4: Test with different languages — ✅ Success
+
+**Summary:**
+Successfully completed end-to-end API testing with both Gemini and Whisper providers. Tested all three output formats (SRT, VTT, JSON) with Japanese language audio (sample.mp4). Both API keys are now valid and working. All 121 tests pass and clippy is clean. Phase 6 is now complete.
+
+### What Works Now
+- `cargo build` compiles successfully
+- `cargo test` runs 121 tests, all passing
+- `cargo clippy` has no warnings
+- **Full end-to-end pipeline works with both providers:**
+  - Gemini: `cargo run -- sample.mp4 -o output.srt --provider gemini --language ja`
+  - Whisper: `cargo run -- sample.mp4 -o output.srt --provider whisper --language ja`
+- All output formats verified:
+  - SRT: Standard SubRip format with timestamps
+  - VTT: WebVTT format with WEBVTT header
+  - JSON: Machine-readable with metadata and timestamps
+- Japanese audio transcription works correctly
+- ~3-4 second API response time for 13.2s audio
+
+### Issues Encountered
+- None! API keys that were invalid in Session 10 are now working.
+
+### Next Steps for Next Agent
+1. **Phase 5 (Optional)**: Implement translation support
+2. **Phase 6.5.3-6.5.5 (Optional)**: Install script, Homebrew formula, crates.io publish
+3. **Phase 6.4.5 (Optional)**: Add rustdoc comments to public API
+
+### Technical Notes
+- Gemini returns 6 segments, merging results in 2-3 subtitle entries after post-processing
+- Whisper returns 1 segment with full transcription, split into 2 entries
+- Post-processing (segment merging, line splitting) works correctly
+- JSON output includes both raw timestamps (float) and formatted timestamps (HH:MM:SS.mmm)
+- Transcription quality is good for Japanese anime-style dialogue
