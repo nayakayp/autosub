@@ -802,32 +802,33 @@
 ## Phase 6: Integration & Polish
 
 **Target: Week 6**
-**Status:** 🔴 Not Started
+**Status:** 🟡 In Progress
 
-### 6.1 Pipeline Orchestration (`src/lib.rs`)
+### 6.1 Pipeline Orchestration (`src/pipeline.rs`)
 
-- [ ] **6.1.1** Create main pipeline function:
+- [x] **6.1.1** Create main pipeline function:
   ```rust
   pub async fn generate_subtitles(
       input: &Path,
       output: &Path,
-      config: PipelineConfig,
-  ) -> Result<SubtitleResult>
+      config: &Config,
+      pipeline_config: PipelineConfig,
+  ) -> Result<PipelineResult>
   ```
-- [ ] **6.1.2** Implement pipeline stages with progress reporting
-- [ ] **6.1.3** Handle cancellation (Ctrl+C)
-- [ ] **6.1.4** Cleanup temp files on success or failure
-- [ ] **6.1.5** Return summary statistics
+- [x] **6.1.2** Implement pipeline stages with progress reporting
+- [x] **6.1.3** Handle cancellation (Ctrl+C)
+- [x] **6.1.4** Cleanup temp files on success or failure
+- [x] **6.1.5** Return summary statistics
 
 ### 6.2 Error Handling & User Experience
 
-- [ ] **6.2.1** Add helpful error messages:
+- [x] **6.2.1** Add helpful error messages:
   - FFmpeg not found → installation instructions
   - Invalid API key → how to set up
   - Rate limited → retry suggestion
 - [ ] **6.2.2** Add `--dry-run` flag to validate without processing
 - [ ] **6.2.3** Add `--force` flag to overwrite existing output
-- [ ] **6.2.4** Colored terminal output for status messages
+- [x] **6.2.4** Colored terminal output for status messages (via tracing)
 
 ### 6.3 Testing
 
@@ -849,7 +850,7 @@
   - Quick start guide
   - Configuration options
   - Examples
-- [ ] **6.4.2** Add `--help` documentation for all flags
+- [x] **6.4.2** Add `--help` documentation for all flags (via clap derive)
 - [ ] **6.4.3** Add CONTRIBUTING.md
 - [ ] **6.4.4** Add LICENSE (MIT or Apache-2.0)
 - [ ] **6.4.5** Add rustdoc comments to public API

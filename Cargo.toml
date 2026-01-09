@@ -50,6 +50,12 @@ futures = "0.3"
 # Regex for parsing Gemini timestamps
 regex = "1"
 
+# Temp file handling
+tempfile = "3"
+
+# Ctrl+C handling
+ctrlc = "3.4"
+
 [dev-dependencies]
 tokio-test = "0.4"
 wiremock = "0.6"

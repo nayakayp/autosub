@@ -1,8 +1,11 @@
 use anyhow::{Context, Result};
 use autosub::config::{Config, OutputFormat, Provider};
+use autosub::{print_summary, PipelineConfig};
 use clap::Parser;
 use std::path::{Path, PathBuf};
-use tracing::{info, Level};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use tracing::{error, info, Level};
 use tracing_subscriber::FmtSubscriber;
 
 #[derive(Parser)]
@@ -40,6 +43,10 @@ struct Cli {
     /// Enable verbose logging
     #[arg(short, long)]
     verbose: bool,
+
+    /// Suppress progress bars and output
+    #[arg(short, long)]
+    quiet: bool,
 }
 
 fn init_logging(verbose: bool) {
@@ -94,28 +101,63 @@ async fn main() -> Result<()> {
         .validate(provider)
         .context("Configuration validation failed")?;
 
-    info!("Input:    {}", cli.input.display());
-    info!("Output:   {}", output.display());
-    info!("Format:   {}", format);
-    info!("Provider: {}", provider);
-    info!("Language: {}", cli.language);
-    if let Some(ref target) = cli.translate {
-        info!("Translate to: {}", target);
+    if !cli.quiet {
+        info!("Input:    {}", cli.input.display());
+        info!("Output:   {}", output.display());
+        info!("Format:   {}", format);
+        info!("Provider: {}", provider);
+        info!("Language: {}", cli.language);
+        if let Some(ref target) = cli.translate {
+            info!("Translate to: {}", target);
+        }
     }
 
-    // TODO: Implement pipeline stages
-    // 1. Extract audio from input file
-    // 2. Perform VAD and chunking
-    // 3. Transcribe chunks using provider
-    // 4. Optionally translate
-    // 5. Format and write subtitles
+    // Setup Ctrl+C handler for graceful cancellation
+    let cancelled = Arc::new(AtomicBool::new(false));
+    let cancelled_clone = cancelled.clone();
 
-    info!("Pipeline not yet implemented. Foundation complete!");
-    info!(
-        "Next steps: Implement audio extraction, transcription, and subtitle generation."
-    );
+    ctrlc::set_handler(move || {
+        if cancelled_clone.load(Ordering::Relaxed) {
+            // Second Ctrl+C, force exit
+            std::process::exit(1);
+        }
+        eprintln!("\nReceived Ctrl+C, cancelling... (press again to force quit)");
+        cancelled_clone.store(true, Ordering::Relaxed);
+    })
+    .ok();
 
-    Ok(())
+    // Build pipeline configuration
+    let pipeline_config = PipelineConfig {
+        provider,
+        format,
+        language: cli.language.clone(),
+        translate_to: cli.translate.clone(),
+        concurrency: cli.concurrency,
+        post_process: Some(autosub::subtitle::PostProcessConfig::default()),
+        show_progress: !cli.quiet,
+    };
+
+    // Run the pipeline
+    match autosub::pipeline::generate_subtitles_with_cancel(
+        &cli.input,
+        &output,
+        &config,
+        pipeline_config,
+        cancelled,
+    )
+    .await
+    {
+        Ok(result) => {
+            if !cli.quiet {
+                print_summary(&result);
+            }
+            Ok(())
+        }
+        Err(e) => {
+            error!("Pipeline failed: {}", e);
+            Err(anyhow::anyhow!("{}", e))
+        }
+    }
 }
 
 #[cfg(test)]
