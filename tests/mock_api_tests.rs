@@ -3,7 +3,7 @@
 //! These tests validate client creation and configuration without hitting real endpoints.
 
 use autosub::audio::{AudioChunk, SpeechRegion};
-use autosub::transcribe::{Transcriber, WhisperClient, GeminiClient, TranscriptionOrchestrator};
+use autosub::transcribe::{GeminiClient, Transcriber, TranscriptionOrchestrator, WhisperClient};
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -39,8 +39,7 @@ mod whisper_tests {
 
     #[tokio::test]
     async fn test_whisper_client_with_language() {
-        let client = WhisperClient::new("test-api-key".to_string())
-            .with_language("ja".to_string());
+        let client = WhisperClient::new("test-api-key".to_string()).with_language("ja".to_string());
         assert_eq!(client.name(), "OpenAI Whisper");
     }
 
@@ -55,9 +54,9 @@ mod whisper_tests {
     async fn test_whisper_handles_missing_file() {
         let client = WhisperClient::new("test-api-key".to_string());
         let chunk = create_test_chunk();
-        
+
         let result = client.transcribe(&chunk).await;
-        
+
         // Should fail because the file doesn't exist
         assert!(result.is_err());
     }
@@ -96,15 +95,13 @@ mod gemini_tests {
 
     #[tokio::test]
     async fn test_gemini_client_with_language() {
-        let client = GeminiClient::new("test-api-key".to_string())
-            .with_language("en".to_string());
+        let client = GeminiClient::new("test-api-key".to_string()).with_language("en".to_string());
         assert_eq!(client.name(), "Google Gemini");
     }
 
     #[tokio::test]
     async fn test_gemini_client_with_diarization() {
-        let client = GeminiClient::new("test-api-key".to_string())
-            .with_diarization(true);
+        let client = GeminiClient::new("test-api-key".to_string()).with_diarization(true);
         assert_eq!(client.name(), "Google Gemini");
     }
 
@@ -112,9 +109,9 @@ mod gemini_tests {
     async fn test_gemini_handles_missing_file() {
         let client = GeminiClient::new("test-api-key".to_string());
         let chunk = create_test_chunk();
-        
+
         let result = client.transcribe(&chunk).await;
-        
+
         // Should fail because the file doesn't exist
         assert!(result.is_err());
     }
@@ -131,7 +128,7 @@ mod orchestrator_tests {
     async fn test_orchestrator_creation() {
         let client: Box<dyn Transcriber> = Box::new(WhisperClient::new("test-api-key".to_string()));
         let _orchestrator = TranscriptionOrchestrator::new(client, 4);
-        
+
         // Just verify it compiles and creates successfully
         assert!(true);
     }
@@ -140,10 +137,10 @@ mod orchestrator_tests {
     async fn test_orchestrator_empty_chunks() {
         let client: Box<dyn Transcriber> = Box::new(WhisperClient::new("test-api-key".to_string()));
         let orchestrator = TranscriptionOrchestrator::new(client, 4);
-        
+
         let chunks: Vec<AudioChunk> = vec![];
         let result = orchestrator.process_chunks(chunks).await;
-        
+
         assert!(result.is_ok());
         let (transcription_result, _stats) = result.unwrap();
         assert!(transcription_result.segments.is_empty());
@@ -153,7 +150,7 @@ mod orchestrator_tests {
     async fn test_orchestrator_with_progress_disabled() {
         let client: Box<dyn Transcriber> = Box::new(GeminiClient::new("test-api-key".to_string()));
         let _orchestrator = TranscriptionOrchestrator::new(client, 4).with_progress(false);
-        
+
         assert!(true);
     }
 }
@@ -176,7 +173,7 @@ mod response_parsing_tests {
             confidence: Some(0.95),
             words: None,
         };
-        
+
         assert_eq!(segment.text, "Hello world");
         assert_eq!(segment.speaker, Some("Speaker 1".to_string()));
         assert_eq!(segment.confidence, Some(0.95));
@@ -192,7 +189,7 @@ mod response_parsing_tests {
             confidence: None,
             words: None,
         };
-        
+
         assert_eq!(segment.text, "Simple text");
         assert!(segment.speaker.is_none());
         assert!(segment.confidence.is_none());
@@ -212,7 +209,7 @@ mod factory_tests {
     fn test_create_whisper_transcriber() {
         let mut config = Config::default();
         config.openai_api_key = Some("test-key".to_string());
-        
+
         let transcriber = create_transcriber(Provider::Whisper, &config).unwrap();
         assert_eq!(transcriber.name(), "OpenAI Whisper");
     }
@@ -221,7 +218,7 @@ mod factory_tests {
     fn test_create_gemini_transcriber() {
         let mut config = Config::default();
         config.gemini_api_key = Some("test-key".to_string());
-        
+
         let transcriber = create_transcriber(Provider::Gemini, &config).unwrap();
         assert_eq!(transcriber.name(), "Google Gemini");
     }
@@ -230,7 +227,7 @@ mod factory_tests {
     fn test_create_transcriber_missing_whisper_key() {
         let mut config = Config::default();
         config.openai_api_key = None;
-        
+
         let result = create_transcriber(Provider::Whisper, &config);
         assert!(result.is_err());
     }
@@ -239,7 +236,7 @@ mod factory_tests {
     fn test_create_transcriber_missing_gemini_key() {
         let mut config = Config::default();
         config.gemini_api_key = None;
-        
+
         let result = create_transcriber(Provider::Gemini, &config);
         assert!(result.is_err());
     }
@@ -250,7 +247,7 @@ mod factory_tests {
 // ============================================================================
 
 mod result_tests {
-    use autosub::transcribe::{TranscriptionResult, TranscriptSegment};
+    use autosub::transcribe::{TranscriptSegment, TranscriptionResult};
     use std::time::Duration;
 
     #[test]
@@ -260,7 +257,7 @@ mod result_tests {
             language: "en".to_string(),
             duration: Duration::ZERO,
         };
-        
+
         assert!(result.segments.is_empty());
         assert_eq!(result.language, "en");
     }
@@ -285,13 +282,13 @@ mod result_tests {
                 words: None,
             },
         ];
-        
+
         let result = TranscriptionResult {
             segments,
             language: "ja".to_string(),
             duration: Duration::from_secs(10),
         };
-        
+
         assert_eq!(result.segments.len(), 2);
         assert_eq!(result.language, "ja");
         assert_eq!(result.duration, Duration::from_secs(10));

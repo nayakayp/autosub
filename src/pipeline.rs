@@ -1,13 +1,11 @@
 use crate::audio::{
-    check_ffmpeg, cleanup_chunks, create_chunks, extract_audio, get_audio_duration,
-    plan_chunks, ChunkConfig, AudioChunk,
+    check_ffmpeg, cleanup_chunks, create_chunks, extract_audio, get_audio_duration, plan_chunks,
+    AudioChunk, ChunkConfig,
 };
 use crate::config::{Config, OutputFormat, Provider};
 use crate::error::{AutosubError, Result};
-use crate::subtitle::{
-    convert_with_defaults, create_formatter, PostProcessConfig, SubtitleEntry,
-};
-use crate::transcribe::{GeminiClient, TranscriptionOrchestrator, Transcriber, WhisperClient};
+use crate::subtitle::{convert_with_defaults, create_formatter, PostProcessConfig, SubtitleEntry};
+use crate::transcribe::{GeminiClient, Transcriber, TranscriptionOrchestrator, WhisperClient};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -171,7 +169,9 @@ pub async fn generate_subtitles_with_cancel(
 
     // Check for cancellation
     if cancelled.load(Ordering::Relaxed) {
-        return Err(AutosubError::Transcription("Pipeline cancelled".to_string()));
+        return Err(AutosubError::Transcription(
+            "Pipeline cancelled".to_string(),
+        ));
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -211,7 +211,9 @@ pub async fn generate_subtitles_with_cancel(
 
     // Check for cancellation
     if cancelled.load(Ordering::Relaxed) {
-        return Err(AutosubError::Transcription("Pipeline cancelled".to_string()));
+        return Err(AutosubError::Transcription(
+            "Pipeline cancelled".to_string(),
+        ));
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -260,7 +262,9 @@ pub async fn generate_subtitles_with_cancel(
     // Check for cancellation
     if cancelled.load(Ordering::Relaxed) {
         let _ = cleanup_chunks(&chunks);
-        return Err(AutosubError::Transcription("Pipeline cancelled".to_string()));
+        return Err(AutosubError::Transcription(
+            "Pipeline cancelled".to_string(),
+        ));
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -275,28 +279,24 @@ pub async fn generate_subtitles_with_cancel(
     // Create transcriber with language set
     let transcriber: Box<dyn Transcriber> = match pipeline_config.provider {
         Provider::Whisper => {
-            let api_key = config
-                .openai_api_key
-                .as_ref()
-                .ok_or_else(|| {
-                    AutosubError::Config(
-                        "OpenAI API key not set. Set OPENAI_API_KEY environment variable."
-                            .to_string(),
-                    )
-                })?;
-            Box::new(WhisperClient::new(api_key.clone()).with_language(pipeline_config.language.clone()))
+            let api_key = config.openai_api_key.as_ref().ok_or_else(|| {
+                AutosubError::Config(
+                    "OpenAI API key not set. Set OPENAI_API_KEY environment variable.".to_string(),
+                )
+            })?;
+            Box::new(
+                WhisperClient::new(api_key.clone()).with_language(pipeline_config.language.clone()),
+            )
         }
         Provider::Gemini => {
-            let api_key = config
-                .gemini_api_key
-                .as_ref()
-                .ok_or_else(|| {
-                    AutosubError::Config(
-                        "Gemini API key not set. Set GEMINI_API_KEY environment variable."
-                            .to_string(),
-                    )
-                })?;
-            Box::new(GeminiClient::new(api_key.clone()).with_language(pipeline_config.language.clone()))
+            let api_key = config.gemini_api_key.as_ref().ok_or_else(|| {
+                AutosubError::Config(
+                    "Gemini API key not set. Set GEMINI_API_KEY environment variable.".to_string(),
+                )
+            })?;
+            Box::new(
+                GeminiClient::new(api_key.clone()).with_language(pipeline_config.language.clone()),
+            )
         }
     };
 
@@ -305,7 +305,8 @@ pub async fn generate_subtitles_with_cancel(
         .with_progress(pipeline_config.show_progress);
 
     // Process chunks
-    let (transcription_result, transcription_stats) = orchestrator.process_chunks(chunks.clone()).await?;
+    let (transcription_result, transcription_stats) =
+        orchestrator.process_chunks(chunks.clone()).await?;
 
     let transcription_time = transcription_start.elapsed();
     info!(
@@ -319,7 +320,9 @@ pub async fn generate_subtitles_with_cancel(
 
     // Check for cancellation
     if cancelled.load(Ordering::Relaxed) {
-        return Err(AutosubError::Transcription("Pipeline cancelled".to_string()));
+        return Err(AutosubError::Transcription(
+            "Pipeline cancelled".to_string(),
+        ));
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -422,7 +425,10 @@ pub fn print_summary(result: &PipelineResult) {
     );
     if let Some(ref lang) = result.detected_language {
         println!();
-        println!("  Note: Detected language '{}' differs from specified", lang);
+        println!(
+            "  Note: Detected language '{}' differs from specified",
+            lang
+        );
     }
     println!();
     println!("═══════════════════════════════════════════════════════════════");

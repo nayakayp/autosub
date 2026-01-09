@@ -1,6 +1,6 @@
 use crate::audio::AudioChunk;
 use crate::error::{AutosubError, Result};
-use crate::transcribe::{Transcript, TranscriptSegment, Transcriber};
+use crate::transcribe::{Transcriber, Transcript, TranscriptSegment};
 use async_trait::async_trait;
 use base64::Engine;
 use regex::Regex;
@@ -15,8 +15,7 @@ const GENERATE_CONTENT_URL: &str =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 /// Gemini Files API endpoint for uploading large files.
-const FILES_UPLOAD_URL: &str =
-    "https://generativelanguage.googleapis.com/upload/v1beta/files";
+const FILES_UPLOAD_URL: &str = "https://generativelanguage.googleapis.com/upload/v1beta/files";
 
 /// Threshold for using Files API vs inline data (20 MB).
 const INLINE_SIZE_THRESHOLD: usize = 20 * 1024 * 1024;
@@ -78,22 +77,24 @@ impl GeminiClient {
     /// Build the transcription prompt.
     fn build_prompt(&self) -> String {
         let mut prompt = String::new();
-        
+
         prompt.push_str("Transcribe this audio with precise timestamps.\n\n");
         prompt.push_str("Format each line as:\n");
         prompt.push_str("[MM:SS] Text of what was said\n\n");
-        
+
         if let Some(ref lang) = self.language {
             prompt.push_str(&format!("The audio is in {} language.\n", lang));
         }
-        
+
         if self.enable_diarization {
-            prompt.push_str("Identify different speakers and label them as Speaker 1, Speaker 2, etc.\n");
+            prompt.push_str(
+                "Identify different speakers and label them as Speaker 1, Speaker 2, etc.\n",
+            );
             prompt.push_str("Format: [MM:SS] Speaker N: Text\n");
         }
-        
+
         prompt.push_str("\nProvide accurate timestamps for each segment of speech.");
-        
+
         prompt
     }
 
@@ -274,15 +275,15 @@ impl GeminiClient {
     /// Parse timestamped text like "[00:15] Hello world" into segments.
     fn parse_timestamped_text(&self, text: &str, chunk: &AudioChunk) -> Vec<TranscriptSegment> {
         let mut segments: Vec<TranscriptSegment> = Vec::new();
-        
+
         // Regex to match [MM:SS] or [HH:MM:SS] timestamps at the start of lines or after newlines
-        let timestamp_re = Regex::new(r"\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]\s*([^\[]+)")
-            .expect("Invalid regex");
+        let timestamp_re =
+            Regex::new(r"\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]\s*([^\[]+)").expect("Invalid regex");
 
         for cap in timestamp_re.captures_iter(text) {
             let minutes: u64 = cap.get(1).unwrap().as_str().parse().unwrap_or(0);
             let seconds: u64 = cap.get(2).unwrap().as_str().parse().unwrap_or(0);
-            
+
             // Handle optional hours field
             let (hours, mins, secs) = if let Some(s) = cap.get(3) {
                 // Format was HH:MM:SS
@@ -292,17 +293,20 @@ impl GeminiClient {
                 // Format was MM:SS
                 (0, minutes, seconds)
             };
-            
+
             let timestamp_secs = hours * 3600 + mins * 60 + secs;
             let start = chunk.region.start + Duration::from_secs(timestamp_secs);
-            
+
             let raw_text = cap.get(4).map(|m| m.as_str().trim()).unwrap_or("");
-            
+
             // Parse speaker label if present (e.g., "Speaker 1: Hello")
             let (speaker, clean_text) = if raw_text.contains(':') {
                 let parts: Vec<&str> = raw_text.splitn(2, ':').collect();
                 if parts.len() == 2 && parts[0].to_lowercase().contains("speaker") {
-                    (Some(parts[0].trim().to_string()), parts[1].trim().to_string())
+                    (
+                        Some(parts[0].trim().to_string()),
+                        parts[1].trim().to_string(),
+                    )
                 } else {
                     (None, raw_text.to_string())
                 }
@@ -420,15 +424,9 @@ struct Content {
 #[derive(Serialize)]
 #[serde(untagged)]
 enum Part {
-    Text {
-        text: String,
-    },
-    InlineData {
-        inline_data: InlineData,
-    },
-    FileData {
-        file_data: FileData,
-    },
+    Text { text: String },
+    InlineData { inline_data: InlineData },
+    FileData { file_data: FileData },
 }
 
 #[derive(Serialize)]
@@ -563,8 +561,17 @@ mod tests {
 
     #[test]
     fn test_get_mime_type() {
-        assert_eq!(GeminiClient::get_mime_type(Path::new("test.wav")), "audio/wav");
-        assert_eq!(GeminiClient::get_mime_type(Path::new("test.mp3")), "audio/mpeg");
-        assert_eq!(GeminiClient::get_mime_type(Path::new("test.flac")), "audio/flac");
+        assert_eq!(
+            GeminiClient::get_mime_type(Path::new("test.wav")),
+            "audio/wav"
+        );
+        assert_eq!(
+            GeminiClient::get_mime_type(Path::new("test.mp3")),
+            "audio/mpeg"
+        );
+        assert_eq!(
+            GeminiClient::get_mime_type(Path::new("test.flac")),
+            "audio/flac"
+        );
     }
 }

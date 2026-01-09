@@ -857,12 +857,12 @@
 
 ### 6.5 Distribution
 
-- [ ] **6.5.1** Setup GitHub Actions CI:
+- [x] **6.5.1** Setup GitHub Actions CI:
   - Build on Linux, macOS, Windows
   - Run tests
   - Clippy lints
   - Format check
-- [ ] **6.5.2** Setup release workflow:
+- [x] **6.5.2** Setup release workflow:
   - Build release binaries
   - Create GitHub release
   - Upload artifacts

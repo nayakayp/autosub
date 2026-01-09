@@ -26,7 +26,10 @@ impl std::str::FromStr for Provider {
         match s.to_lowercase().as_str() {
             "whisper" => Ok(Provider::Whisper),
             "gemini" => Ok(Provider::Gemini),
-            _ => Err(format!("Unknown provider: {}. Use 'whisper' or 'gemini'", s)),
+            _ => Err(format!(
+                "Unknown provider: {}. Use 'whisper' or 'gemini'",
+                s
+            )),
         }
     }
 }

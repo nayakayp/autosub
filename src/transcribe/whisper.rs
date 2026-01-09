@@ -1,6 +1,6 @@
 use crate::audio::AudioChunk;
 use crate::error::{AutosubError, Result};
-use crate::transcribe::{Transcript, TranscriptSegment, Transcriber, WordTimestamp};
+use crate::transcribe::{Transcriber, Transcript, TranscriptSegment, WordTimestamp};
 use async_trait::async_trait;
 use reqwest::multipart::{Form, Part};
 use serde::Deserialize;

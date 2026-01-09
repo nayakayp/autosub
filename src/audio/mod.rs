@@ -3,12 +3,11 @@ pub mod extract;
 pub mod vad;
 
 pub use chunk::{
-    cleanup_chunks, create_chunks, estimate_wav_size, get_temp_chunk_dir, plan_chunks,
-    ChunkConfig,
+    cleanup_chunks, create_chunks, estimate_wav_size, get_temp_chunk_dir, plan_chunks, ChunkConfig,
 };
 pub use extract::{
-    check_ffmpeg, check_ffprobe, extract_audio, extract_audio_segment,
-    extract_audio_with_progress, get_audio_duration, get_audio_info,
+    check_ffmpeg, check_ffprobe, extract_audio, extract_audio_segment, extract_audio_with_progress,
+    get_audio_duration, get_audio_info,
 };
 pub use vad::{detect_speech_regions, has_speech, total_speech_duration, VadConfig};
 

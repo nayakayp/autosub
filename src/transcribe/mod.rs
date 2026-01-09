@@ -87,21 +87,19 @@ pub trait Transcriber: Send + Sync {
 pub fn create_transcriber(provider: Provider, config: &Config) -> Result<Box<dyn Transcriber>> {
     match provider {
         Provider::Whisper => {
-            let api_key = config
-                .openai_api_key
-                .as_ref()
-                .ok_or_else(|| crate::error::AutosubError::Config(
+            let api_key = config.openai_api_key.as_ref().ok_or_else(|| {
+                crate::error::AutosubError::Config(
                     "OpenAI API key not set. Set OPENAI_API_KEY environment variable.".to_string(),
-                ))?;
+                )
+            })?;
             Ok(Box::new(WhisperClient::new(api_key.clone())))
         }
         Provider::Gemini => {
-            let api_key = config
-                .gemini_api_key
-                .as_ref()
-                .ok_or_else(|| crate::error::AutosubError::Config(
+            let api_key = config.gemini_api_key.as_ref().ok_or_else(|| {
+                crate::error::AutosubError::Config(
                     "Gemini API key not set. Set GEMINI_API_KEY environment variable.".to_string(),
-                ))?;
+                )
+            })?;
             Ok(Box::new(GeminiClient::new(api_key.clone())))
         }
     }

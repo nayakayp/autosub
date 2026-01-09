@@ -252,8 +252,21 @@ fn adjust_timing(entries: Vec<SubtitleEntry>, config: &PostProcessConfig) -> Vec
 /// Remove common filler words from subtitle text.
 fn remove_filler_words(entries: Vec<SubtitleEntry>) -> Vec<SubtitleEntry> {
     const FILLERS: &[&str] = &[
-        " um ", " uh ", " um,", " uh,", " um.", " uh.", " er ", " er,", " er.", 
-        " like ", " like, ", " you know ", " you know, ", " I mean ", " I mean, ",
+        " um ",
+        " uh ",
+        " um,",
+        " uh,",
+        " um.",
+        " uh.",
+        " er ",
+        " er,",
+        " er.",
+        " like ",
+        " like, ",
+        " you know ",
+        " you know, ",
+        " I mean ",
+        " I mean, ",
     ];
 
     entries
@@ -319,10 +332,7 @@ mod tests {
 
     #[test]
     fn test_merge_respects_speakers() {
-        let mut entries = vec![
-            entry(1, 0, 1000, "Hello"),
-            entry(2, 1200, 2000, "world"),
-        ];
+        let mut entries = vec![entry(1, 0, 1000, "Hello"), entry(2, 1200, 2000, "world")];
         entries[0].speaker = Some("A".to_string());
         entries[1].speaker = Some("B".to_string());
 

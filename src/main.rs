@@ -11,7 +11,9 @@ use tracing_subscriber::FmtSubscriber;
 #[derive(Parser)]
 #[command(name = "autosub")]
 #[command(version, about = "Automatic subtitle generation using AI")]
-#[command(long_about = "Generate subtitles from video/audio files using OpenAI Whisper or Google Gemini APIs.")]
+#[command(
+    long_about = "Generate subtitles from video/audio files using OpenAI Whisper or Google Gemini APIs."
+)]
 struct Cli {
     /// Input video/audio file
     input: PathBuf,
@@ -89,10 +91,7 @@ async fn main() -> Result<()> {
     }
 
     // Parse format
-    let format: OutputFormat = cli
-        .format
-        .parse()
-        .map_err(|e: String| anyhow::anyhow!(e))?;
+    let format: OutputFormat = cli.format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
 
     // Parse provider
     let provider: Provider = cli
@@ -101,7 +100,9 @@ async fn main() -> Result<()> {
         .map_err(|e: String| anyhow::anyhow!(e))?;
 
     // Derive output path if not specified
-    let output = cli.output.unwrap_or_else(|| derive_output_path(&cli.input, &format));
+    let output = cli
+        .output
+        .unwrap_or_else(|| derive_output_path(&cli.input, &format));
 
     // Check if output file exists and --force not specified
     if output.exists() && !cli.force && !cli.dry_run {

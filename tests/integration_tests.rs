@@ -3,18 +3,15 @@
 //! These tests validate the integration between components without requiring
 //! external API keys.
 
-use autosub::audio::{AudioMetadata, SpeechRegion, ChunkConfig};
+use autosub::audio::{AudioMetadata, ChunkConfig, SpeechRegion};
 use autosub::config::{Config, OutputFormat, Provider};
-use autosub::subtitle::{
-    SubtitleEntry, SubtitleFormatter, create_formatter,
-    convert_to_subtitles, quick_convert, convert_with_defaults,
-    PostProcessConfig,
-    srt::SrtFormatter,
-    vtt::VttFormatter,
-    json::JsonFormatter,
-};
-use autosub::transcribe::{TranscriptSegment, Transcript};
 use autosub::pipeline::PipelineConfig;
+use autosub::subtitle::{
+    convert_to_subtitles, convert_with_defaults, create_formatter, json::JsonFormatter,
+    quick_convert, srt::SrtFormatter, vtt::VttFormatter, PostProcessConfig, SubtitleEntry,
+    SubtitleFormatter,
+};
+use autosub::transcribe::{Transcript, TranscriptSegment};
 
 use std::time::Duration;
 
@@ -37,10 +34,10 @@ mod config_tests {
     fn test_config_provider_api_key_validation() {
         let mut config = Config::default();
         config.openai_api_key = None;
-        
+
         let result = config.validate(Provider::Whisper);
         assert!(result.is_err());
-        
+
         config.openai_api_key = Some("test-key".to_string());
         assert!(config.validate(Provider::Whisper).is_ok());
     }
@@ -49,10 +46,10 @@ mod config_tests {
     fn test_config_gemini_validation() {
         let mut config = Config::default();
         config.gemini_api_key = None;
-        
+
         let result = config.validate(Provider::Gemini);
         assert!(result.is_err());
-        
+
         config.gemini_api_key = Some("test-key".to_string());
         assert!(config.validate(Provider::Gemini).is_ok());
     }
@@ -96,7 +93,7 @@ mod subtitle_formatter_tests {
         let formatter = SrtFormatter;
         let entries = sample_entries();
         let output = formatter.format(&entries);
-        
+
         assert!(output.contains("1\n"));
         assert!(output.contains("00:00:01,500 --> 00:00:04,000"));
         assert!(output.contains("Hello, welcome to this video."));
@@ -109,7 +106,7 @@ mod subtitle_formatter_tests {
         let formatter = VttFormatter;
         let entries = sample_entries();
         let output = formatter.format(&entries);
-        
+
         assert!(output.starts_with("WEBVTT\n"));
         assert!(output.contains("00:00:01.500 --> 00:00:04.000"));
         assert!(output.contains("Hello, welcome to this video."));
@@ -125,7 +122,7 @@ mod subtitle_formatter_tests {
         };
         let entries = sample_entries();
         let output = formatter.format(&entries);
-        
+
         assert!(output.contains("\"metadata\""));
         assert!(output.contains("\"subtitles\""));
         assert!(output.contains("\"source_file\": \"test.mp4\""));
@@ -137,10 +134,10 @@ mod subtitle_formatter_tests {
     fn test_create_formatter_factory() {
         let srt = create_formatter(OutputFormat::Srt);
         assert_eq!(srt.extension(), "srt");
-        
+
         let vtt = create_formatter(OutputFormat::Vtt);
         assert_eq!(vtt.extension(), "vtt");
-        
+
         let json = create_formatter(OutputFormat::Json);
         assert_eq!(json.extension(), "json");
     }
@@ -154,10 +151,10 @@ mod subtitle_formatter_tests {
             text: "This is line one.\nThis is line two.".to_string(),
             speaker: None,
         }];
-        
+
         let formatter = SrtFormatter;
         let output = formatter.format(&entries);
-        
+
         assert!(output.contains("This is line one.\nThis is line two."));
     }
 }
@@ -194,7 +191,7 @@ mod conversion_tests {
     fn test_quick_convert_no_processing() {
         let segments = sample_segments();
         let entries = quick_convert(segments);
-        
+
         assert_eq!(entries.len(), 2);
         assert_eq!(entries[0].index, 1);
         assert_eq!(entries[1].index, 2);
@@ -205,26 +202,24 @@ mod conversion_tests {
     fn test_convert_with_speaker_labels() {
         let segments = sample_segments();
         let entries = quick_convert(segments);
-        
+
         // Second entry should have speaker label
         assert_eq!(entries[1].text, "[Speaker A] Second segment here.");
     }
 
     #[test]
     fn test_convert_with_default_processing() {
-        let segments = vec![
-            TranscriptSegment {
-                start: Duration::from_millis(0),
-                end: Duration::from_millis(200), // Very short - should extend
-                text: "Short.".to_string(),
-                speaker: None,
-                confidence: None,
-                words: None,
-            },
-        ];
-        
+        let segments = vec![TranscriptSegment {
+            start: Duration::from_millis(0),
+            end: Duration::from_millis(200), // Very short - should extend
+            text: "Short.".to_string(),
+            speaker: None,
+            confidence: None,
+            words: None,
+        }];
+
         let entries = convert_with_defaults(segments);
-        
+
         // Should be extended to minimum 1s
         assert!(entries[0].end >= Duration::from_secs(1));
     }
@@ -239,14 +234,14 @@ mod conversion_tests {
             confidence: None,
             words: None,
         }];
-        
+
         let config = PostProcessConfig {
             remove_fillers: true,
             ..Default::default()
         };
-        
+
         let entries = convert_to_subtitles(segments, Some(config));
-        
+
         // Filler words should be removed
         assert!(!entries[0].text.contains(" um "));
         assert!(!entries[0].text.contains("you know"));
@@ -272,14 +267,14 @@ mod conversion_tests {
                 words: None,
             },
         ];
-        
+
         let config = PostProcessConfig {
             merge_threshold: Duration::from_secs(1),
             ..Default::default()
         };
-        
+
         let entries = convert_to_subtitles(segments, Some(config));
-        
+
         // Should merge since gap < threshold
         assert_eq!(entries.len(), 1);
         assert!(entries[0].text.contains("First.") && entries[0].text.contains("Second."));
@@ -292,8 +287,8 @@ mod conversion_tests {
 
 mod audio_tests {
     use super::*;
-    use autosub::audio::vad::VadConfig;
     use autosub::audio::chunk::plan_chunks;
+    use autosub::audio::vad::VadConfig;
 
     #[test]
     fn test_audio_metadata_struct() {
@@ -302,7 +297,7 @@ mod audio_tests {
             sample_rate: 16000,
             channels: 1,
         };
-        
+
         assert_eq!(metadata.duration, Duration::from_secs(120));
         assert_eq!(metadata.sample_rate, 16000);
         assert_eq!(metadata.channels, 1);
@@ -314,7 +309,7 @@ mod audio_tests {
             start: Duration::from_secs(10),
             end: Duration::from_secs(25),
         };
-        
+
         assert_eq!(region.start, Duration::from_secs(10));
         assert_eq!(region.end, Duration::from_secs(25));
     }
@@ -322,7 +317,7 @@ mod audio_tests {
     #[test]
     fn test_chunk_config_whisper_defaults() {
         let config = ChunkConfig::whisper();
-        
+
         assert_eq!(config.max_duration, Duration::from_secs(60));
         assert_eq!(config.max_file_size, 25 * 1024 * 1024);
     }
@@ -330,7 +325,7 @@ mod audio_tests {
     #[test]
     fn test_chunk_config_gemini_defaults() {
         let config = ChunkConfig::gemini();
-        
+
         assert_eq!(config.max_duration, Duration::from_secs(60));
         assert_eq!(config.max_file_size, 20 * 1024 * 1024);
     }
@@ -338,7 +333,7 @@ mod audio_tests {
     #[test]
     fn test_vad_config_defaults() {
         let config = VadConfig::default();
-        
+
         assert!(config.energy_threshold > 0.0);
         assert!(config.min_speech_duration > Duration::ZERO);
         assert!(config.min_silence_duration > Duration::ZERO);
@@ -357,14 +352,14 @@ mod audio_tests {
                 end: Duration::from_secs(90),
             },
         ];
-        
+
         let config = ChunkConfig {
             max_duration: Duration::from_secs(60),
             ..Default::default()
         };
         let total_duration = Duration::from_secs(100);
         let chunks = plan_chunks(&regions, total_duration, &config);
-        
+
         // Two regions that together exceed max_duration should stay as two chunks
         assert_eq!(chunks.len(), 2);
     }
@@ -375,15 +370,15 @@ mod audio_tests {
             start: Duration::from_secs(0),
             end: Duration::from_secs(120), // 2 minutes
         }];
-        
+
         let config = ChunkConfig {
             max_duration: Duration::from_secs(60),
             ..Default::default()
         };
-        
+
         let total_duration = Duration::from_secs(120);
         let chunks = plan_chunks(&regions, total_duration, &config);
-        
+
         // Should split into 2 chunks
         assert_eq!(chunks.len(), 2);
     }
@@ -399,7 +394,7 @@ mod pipeline_config_tests {
     #[test]
     fn test_pipeline_config_default() {
         let config = PipelineConfig::default();
-        
+
         assert_eq!(config.provider, Provider::Whisper);
         assert_eq!(config.format, OutputFormat::Srt);
         assert_eq!(config.language, "en");
@@ -417,7 +412,7 @@ mod pipeline_config_tests {
             post_process: Some(PostProcessConfig::default()),
             show_progress: true,
         };
-        
+
         assert_eq!(config.provider, Provider::Gemini);
         assert_eq!(config.format, OutputFormat::Vtt);
         assert_eq!(config.language, "ja");
@@ -454,14 +449,14 @@ mod e2e_formatting_tests {
                 words: None,
             },
         ];
-        
+
         // Convert to subtitle entries
         let entries = quick_convert(segments);
-        
+
         // Format as SRT
         let formatter = create_formatter(OutputFormat::Srt);
         let srt_output = formatter.format(&entries);
-        
+
         // Verify output
         assert!(srt_output.contains("1\n"));
         assert!(srt_output.contains("00:00:00,500 --> 00:00:03,000"));
@@ -481,11 +476,11 @@ mod e2e_formatting_tests {
             confidence: None,
             words: None,
         }];
-        
+
         let entries = quick_convert(segments);
         let formatter = create_formatter(OutputFormat::Vtt);
         let vtt_output = formatter.format(&entries);
-        
+
         assert!(vtt_output.starts_with("WEBVTT\n"));
         assert!(vtt_output.contains("00:00:00.000 --> 00:00:05.000"));
         assert!(vtt_output.contains("Hello World"));
@@ -511,11 +506,11 @@ mod e2e_formatting_tests {
                 words: None,
             },
         ];
-        
+
         let entries = quick_convert(segments);
         let formatter = SrtFormatter;
         let output = formatter.format(&entries);
-        
+
         assert!(output.contains("[Alice] How are you?"));
         assert!(output.contains("[Bob] I'm doing great!"));
     }
@@ -532,9 +527,9 @@ mod edge_case_tests {
     fn test_empty_segments() {
         let segments: Vec<TranscriptSegment> = vec![];
         let entries = quick_convert(segments);
-        
+
         assert!(entries.is_empty());
-        
+
         let formatter = SrtFormatter;
         let output = formatter.format(&entries);
         assert!(output.is_empty());
@@ -550,9 +545,9 @@ mod edge_case_tests {
             confidence: None,
             words: None,
         }];
-        
+
         let entries = convert_with_defaults(segments);
-        
+
         // Should be extended to minimum duration
         assert!(entries[0].end >= Duration::from_secs(1));
     }
@@ -577,9 +572,9 @@ mod edge_case_tests {
                 words: None,
             },
         ];
-        
+
         let entries = quick_convert(segments);
-        
+
         // First entry's end should be adjusted to not overlap
         assert!(entries[0].end <= entries[1].start);
     }
@@ -594,9 +589,9 @@ mod edge_case_tests {
             confidence: None,
             words: None,
         }];
-        
+
         let entries = quick_convert(segments);
-        
+
         // Should trim whitespace
         assert_eq!(entries[0].text, "trimmed text");
     }
@@ -621,11 +616,11 @@ mod edge_case_tests {
                 words: None,
             },
         ];
-        
+
         let entries = quick_convert(segments);
         let formatter = SrtFormatter;
         let output = formatter.format(&entries);
-        
+
         assert!(output.contains("日本語テスト"));
         assert!(output.contains("🎬 Emoji support"));
     }
@@ -633,7 +628,7 @@ mod edge_case_tests {
     #[test]
     fn test_very_long_text_splitting() {
         let long_text = "This is a very long sentence that should probably be split into multiple lines because it exceeds the typical maximum character limit for subtitle display which is usually around 42 characters per line.";
-        
+
         let segments = vec![TranscriptSegment {
             start: Duration::from_secs(0),
             end: Duration::from_secs(10),
@@ -642,14 +637,14 @@ mod edge_case_tests {
             confidence: None,
             words: None,
         }];
-        
+
         let config = PostProcessConfig {
             max_line_length: 42,
             ..Default::default()
         };
-        
+
         let entries = convert_to_subtitles(segments, Some(config));
-        
+
         // Should have split into multiple entries
         assert!(entries.len() > 1);
     }
@@ -672,9 +667,9 @@ mod transcript_tests {
             confidence: Some(0.95),
             words: None,
         };
-        
+
         let transcript = Transcript::single(segment);
-        
+
         assert_eq!(transcript.segments.len(), 1);
         assert_eq!(transcript.segments[0].text, "Test segment.");
     }
@@ -682,7 +677,7 @@ mod transcript_tests {
     #[test]
     fn test_empty_transcript() {
         let transcript = Transcript::empty();
-        
+
         assert!(transcript.segments.is_empty());
         assert!(transcript.language.is_none());
         assert!(transcript.duration.is_none());

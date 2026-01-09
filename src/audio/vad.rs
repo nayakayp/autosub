@@ -61,9 +61,8 @@ fn calculate_rms(samples: &[i16]) -> f32 {
 ///
 /// Returns a list of time regions where speech was detected.
 pub fn detect_speech_regions(audio_path: &Path, config: &VadConfig) -> Result<Vec<SpeechRegion>> {
-    let reader = WavReader::open(audio_path).map_err(|e| {
-        AutosubError::AudioExtraction(format!("Failed to open WAV file: {e}"))
-    })?;
+    let reader = WavReader::open(audio_path)
+        .map_err(|e| AutosubError::AudioExtraction(format!("Failed to open WAV file: {e}")))?;
 
     let spec = reader.spec();
     let sample_rate = spec.sample_rate;
@@ -199,10 +198,7 @@ pub fn has_speech(audio_path: &Path, config: &VadConfig) -> Result<bool> {
 
 /// Get total speech duration from detected regions.
 pub fn total_speech_duration(regions: &[SpeechRegion]) -> Duration {
-    regions
-        .iter()
-        .map(|r| r.end.saturating_sub(r.start))
-        .sum()
+    regions.iter().map(|r| r.end.saturating_sub(r.start)).sum()
 }
 
 #[cfg(test)]
@@ -224,7 +220,9 @@ mod tests {
 
     #[test]
     fn test_calculate_rms_mixed() {
-        let samples: Vec<i16> = (0..100).map(|i| if i % 2 == 0 { 1000 } else { -1000 }).collect();
+        let samples: Vec<i16> = (0..100)
+            .map(|i| if i % 2 == 0 { 1000 } else { -1000 })
+            .collect();
         let rms = calculate_rms(&samples);
         assert!(rms > 0.0);
         assert!(rms < 1.0);

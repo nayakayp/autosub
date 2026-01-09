@@ -1,6 +1,6 @@
 use crate::audio::AudioChunk;
 use crate::error::{AutosubError, Result};
-use crate::transcribe::{Transcript, TranscriptSegment, TranscriptionResult, Transcriber};
+use crate::transcribe::{Transcriber, Transcript, TranscriptSegment, TranscriptionResult};
 use futures::stream::{FuturesUnordered, StreamExt};
 use indicatif::{ProgressBar, ProgressStyle};
 use std::sync::Arc;
@@ -110,19 +110,19 @@ impl TranscriptionOrchestrator {
             let future = async move {
                 // Acquire permit (waits if at concurrency limit)
                 let _permit = sem.acquire().await.expect("Semaphore closed");
-                
+
                 let chunk_start = Instant::now();
                 let index = chunk.index;
-                
+
                 debug!("Starting transcription of chunk {}", index);
-                
+
                 let result = transcriber.transcribe(&chunk).await;
                 let duration_ms = chunk_start.elapsed().as_millis() as u64;
-                
+
                 if let Some(ref pb) = pb {
                     pb.inc(1);
                 }
-                
+
                 match result {
                     Ok(transcript) => {
                         debug!("Chunk {} completed in {}ms", index, duration_ms);
@@ -144,7 +144,7 @@ impl TranscriptionOrchestrator {
                     }
                 }
             };
-            
+
             futures.push(future);
         }
 
@@ -171,11 +171,11 @@ impl TranscriptionOrchestrator {
 
         for result in &results {
             total_chunk_time_ms += result.duration_ms;
-            
+
             if let Some(ref transcript) = result.transcript {
                 successful_count += 1;
                 all_segments.extend(transcript.segments.clone());
-                
+
                 // Use first detected language
                 if detected_language.is_none() {
                     detected_language = transcript.language.clone();
@@ -223,10 +223,7 @@ impl TranscriptionOrchestrator {
 
         // Return error if all chunks failed
         if successful_count == 0 && total_chunks > 0 {
-            let error_msgs: Vec<String> = results
-                .iter()
-                .filter_map(|r| r.error.clone())
-                .collect();
+            let error_msgs: Vec<String> = results.iter().filter_map(|r| r.error.clone()).collect();
             return Err(AutosubError::Transcription(format!(
                 "All {} chunks failed. Errors: {}",
                 total_chunks,
@@ -266,7 +263,7 @@ impl TranscriptionOrchestrator {
             }
 
             let (result, _stats) = self.process_chunks(remaining_chunks).await?;
-            
+
             // Collect successful results
             all_segments.extend(result.segments);
             if detected_language.is_none() && result.language != "unknown" {
@@ -348,14 +345,14 @@ mod tests {
     impl Transcriber for MockTranscriber {
         async fn transcribe(&self, chunk: &AudioChunk) -> Result<Transcript> {
             self.call_count.fetch_add(1, Ordering::SeqCst);
-            
+
             // Simulate some processing time
             tokio::time::sleep(Duration::from_millis(10)).await;
-            
+
             if self.fail_on_index == Some(chunk.index) {
                 return Err(AutosubError::Transcription("Mock error".to_string()));
             }
-            
+
             Ok(Transcript {
                 segments: vec![TranscriptSegment {
                     text: format!("Transcript for chunk {}", chunk.index),
@@ -402,7 +399,7 @@ mod tests {
         let orchestrator = TranscriptionOrchestrator::new(transcriber, 4).with_progress(false);
 
         let (result, stats) = orchestrator.process_chunks(Vec::new()).await.unwrap();
-        
+
         assert!(result.segments.is_empty());
         assert_eq!(stats.total_chunks, 0);
     }
@@ -414,7 +411,7 @@ mod tests {
 
         let chunks = create_test_chunks(1);
         let (result, stats) = orchestrator.process_chunks(chunks).await.unwrap();
-        
+
         assert_eq!(result.segments.len(), 1);
         assert_eq!(stats.total_chunks, 1);
         assert_eq!(stats.successful_chunks, 1);
@@ -428,7 +425,7 @@ mod tests {
 
         let chunks = create_test_chunks(5);
         let (result, stats) = orchestrator.process_chunks(chunks).await.unwrap();
-        
+
         assert_eq!(result.segments.len(), 5);
         assert_eq!(stats.total_chunks, 5);
         assert_eq!(stats.successful_chunks, 5);
@@ -442,7 +439,7 @@ mod tests {
 
         let chunks = create_test_chunks(10);
         let (result, _stats) = orchestrator.process_chunks(chunks).await.unwrap();
-        
+
         // Verify segments are in order by checking start times increase
         for i in 1..result.segments.len() {
             assert!(result.segments[i].start >= result.segments[i - 1].start);
@@ -456,7 +453,7 @@ mod tests {
 
         let chunks = create_test_chunks(5);
         let (result, stats) = orchestrator.process_chunks(chunks).await.unwrap();
-        
+
         // Should have 4 successful, 1 failed
         assert_eq!(result.segments.len(), 4);
         assert_eq!(stats.successful_chunks, 4);

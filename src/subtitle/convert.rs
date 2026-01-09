@@ -90,7 +90,12 @@ mod tests {
         }
     }
 
-    fn segment_with_speaker(start_ms: u64, end_ms: u64, text: &str, speaker: &str) -> TranscriptSegment {
+    fn segment_with_speaker(
+        start_ms: u64,
+        end_ms: u64,
+        text: &str,
+        speaker: &str,
+    ) -> TranscriptSegment {
         TranscriptSegment {
             text: text.to_string(),
             start: Duration::from_millis(start_ms),

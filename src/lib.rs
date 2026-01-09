@@ -8,4 +8,6 @@ pub mod translate;
 
 pub use config::Config;
 pub use error::{AutosubError, Result};
-pub use pipeline::{generate_subtitles, PipelineConfig, PipelineResult, PipelineStats, print_summary};
+pub use pipeline::{
+    generate_subtitles, print_summary, PipelineConfig, PipelineResult, PipelineStats,
+};

@@ -117,9 +117,9 @@ pub fn get_audio_info(input: &Path) -> Result<(u32, u16)> {
         )));
     }
 
-    let sample_rate: u32 = parts[0].parse().map_err(|e| {
-        AutosubError::AudioExtraction(format!("Failed to parse sample rate: {e}"))
-    })?;
+    let sample_rate: u32 = parts[0]
+        .parse()
+        .map_err(|e| AutosubError::AudioExtraction(format!("Failed to parse sample rate: {e}")))?;
 
     let channels: u16 = parts[1]
         .parse()
@@ -136,9 +136,7 @@ pub async fn extract_audio(input: &Path, output: &Path) -> Result<AudioMetadata>
     check_ffprobe()?;
 
     if !input.exists() {
-        return Err(AutosubError::FileNotFound(
-            input.display().to_string(),
-        ));
+        return Err(AutosubError::FileNotFound(input.display().to_string()));
     }
 
     info!("Extracting audio from {}", input.display());
@@ -147,20 +145,9 @@ pub async fn extract_audio(input: &Path, output: &Path) -> Result<AudioMetadata>
     debug!("Input duration: {:?}", duration);
 
     let status = Command::new("ffmpeg")
-        .args([
-            "-y",
-            "-i",
-        ])
+        .args(["-y", "-i"])
         .arg(input)
-        .args([
-            "-vn",
-            "-acodec",
-            "pcm_s16le",
-            "-ar",
-            "16000",
-            "-ac",
-            "1",
-        ])
+        .args(["-vn", "-acodec", "pcm_s16le", "-ar", "16000", "-ac", "1"])
         .arg(output)
         .status()
         .map_err(|e| AutosubError::AudioExtraction(format!("Failed to run FFmpeg: {e}")))?;
@@ -201,9 +188,7 @@ where
     check_ffprobe()?;
 
     if !input.exists() {
-        return Err(AutosubError::FileNotFound(
-            input.display().to_string(),
-        ));
+        return Err(AutosubError::FileNotFound(input.display().to_string()));
     }
 
     info!("Extracting audio from {}", input.display());
@@ -239,9 +224,9 @@ where
         }
     }
 
-    let status = child.wait().map_err(|e| {
-        AutosubError::AudioExtraction(format!("Failed to wait for FFmpeg: {e}"))
-    })?;
+    let status = child
+        .wait()
+        .map_err(|e| AutosubError::AudioExtraction(format!("Failed to wait for FFmpeg: {e}")))?;
 
     if !status.success() {
         return Err(AutosubError::AudioExtraction(
@@ -276,9 +261,7 @@ pub async fn extract_audio_segment(
     check_ffmpeg()?;
 
     if !input.exists() {
-        return Err(AutosubError::FileNotFound(
-            input.display().to_string(),
-        ));
+        return Err(AutosubError::FileNotFound(input.display().to_string()));
     }
 
     let duration = end.saturating_sub(start);
@@ -365,8 +348,11 @@ mod tests {
             return;
         }
 
-        let result =
-            extract_audio(Path::new("/nonexistent/file.mp4"), Path::new("/tmp/out.wav")).await;
+        let result = extract_audio(
+            Path::new("/nonexistent/file.mp4"),
+            Path::new("/tmp/out.wav"),
+        )
+        .await;
         assert!(result.is_err());
         match &result {
             Err(AutosubError::FileNotFound(path)) => {
