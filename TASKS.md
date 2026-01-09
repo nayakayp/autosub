@@ -339,11 +339,11 @@
 ## Phase 3: Transcription Providers
 
 **Target: Week 3**
-**Status:** 🔴 Not Started
+**Status:** 🟢 Complete
 
 ### 3.1 Transcriber Trait (`src/transcribe/mod.rs`)
 
-- [ ] **3.1.1** Define core trait:
+- [x] **3.1.1** Define core trait:
   ```rust
   #[async_trait]
   pub trait Transcriber: Send + Sync {
@@ -353,7 +353,7 @@
       fn supported_formats(&self) -> &[&str];
   }
   ```
-- [ ] **3.1.2** Define `TranscriptSegment`:
+- [x] **3.1.2** Define `TranscriptSegment`:
   ```rust
   pub struct TranscriptSegment {
       pub text: String,
@@ -370,7 +370,7 @@
       pub end: Duration,
   }
   ```
-- [ ] **3.1.3** Define `TranscriptionResult`:
+- [x] **3.1.3** Define `TranscriptionResult`:
   ```rust
   pub struct TranscriptionResult {
       pub segments: Vec<TranscriptSegment>,
@@ -378,7 +378,7 @@
       pub duration: Duration,
   }
   ```
-- [ ] **3.1.4** Create factory function:
+- [x] **3.1.4** Create factory function:
   ```rust
   pub fn create_transcriber(provider: Provider, config: &Config) -> Box<dyn Transcriber>
   ```
@@ -386,7 +386,7 @@
 ### 3.2 OpenAI Whisper Provider (`src/transcribe/whisper.rs`)
 
 #### 3.2.1 Basic Setup
-- [ ] **3.2.1.1** Define `WhisperClient` struct:
+- [x] **3.2.1.1** Define `WhisperClient` struct:
   ```rust
   pub struct WhisperClient {
       client: reqwest::Client,
@@ -395,7 +395,7 @@
       base_url: String,
   }
   ```
-- [ ] **3.2.1.2** Define `WhisperModel` enum:
+- [x] **3.2.1.2** Define `WhisperModel` enum:
   ```rust
   pub enum WhisperModel {
       Whisper1,           // whisper-1
@@ -404,22 +404,22 @@
       Gpt4oDiarize,       // gpt-4o-transcribe-diarize
   }
   ```
-- [ ] **3.2.1.3** Implement `WhisperClient::new()` with config validation
+- [x] **3.2.1.3** Implement `WhisperClient::new()` with config validation
 
 #### 3.2.2 API Request Building
-- [ ] **3.2.2.1** Build multipart form data:
+- [x] **3.2.2.1** Build multipart form data:
   ```rust
   async fn build_request(&self, chunk: &AudioChunk) -> Result<reqwest::multipart::Form>
   ```
-- [ ] **3.2.2.2** Add file field with correct MIME type
-- [ ] **3.2.2.3** Add model field
-- [ ] **3.2.2.4** Add response_format field (`verbose_json` for timestamps)
-- [ ] **3.2.2.5** Add language field (optional)
-- [ ] **3.2.2.6** Add prompt field for vocabulary hints (max 224 tokens)
-- [ ] **3.2.2.7** Add timestamp_granularities field (`word`, `segment`)
+- [x] **3.2.2.2** Add file field with correct MIME type
+- [x] **3.2.2.3** Add model field
+- [x] **3.2.2.4** Add response_format field (`verbose_json` for timestamps)
+- [x] **3.2.2.5** Add language field (optional)
+- [x] **3.2.2.6** Add prompt field for vocabulary hints (max 224 tokens)
+- [x] **3.2.2.7** Add timestamp_granularities field (`word`, `segment`)
 
 #### 3.2.3 API Response Parsing
-- [ ] **3.2.3.1** Define response structs:
+- [x] **3.2.3.1** Define response structs:
   ```rust
   #[derive(Deserialize)]
   struct WhisperResponse {
@@ -444,9 +444,9 @@
       end: f64,
   }
   ```
-- [ ] **3.2.3.2** Parse `verbose_json` response
-- [ ] **3.2.3.3** Convert to `TranscriptSegment`
-- [ ] **3.2.3.4** Handle API error responses:
+- [x] **3.2.3.2** Parse `verbose_json` response
+- [x] **3.2.3.3** Convert to `TranscriptSegment`
+- [x] **3.2.3.4** Handle API error responses:
   ```rust
   #[derive(Deserialize)]
   struct ApiError {
@@ -462,33 +462,33 @@
   ```
 
 #### 3.2.4 Retry Logic
-- [ ] **3.2.4.1** Implement exponential backoff:
+- [x] **3.2.4.1** Implement exponential backoff:
   ```rust
   async fn with_retry<T, F, Fut>(f: F, max_retries: u32) -> Result<T>
   where
       F: Fn() -> Fut,
       Fut: Future<Output = Result<T>>,
   ```
-- [ ] **3.2.4.2** Retry on 429 (rate limit) with Retry-After header
-- [ ] **3.2.4.3** Retry on 500, 502, 503, 504 (server errors)
-- [ ] **3.2.4.4** Do not retry on 400, 401, 403 (client errors)
-- [ ] **3.2.4.5** Add jitter to backoff delays
+- [x] **3.2.4.2** Retry on 429 (rate limit) with Retry-After header
+- [x] **3.2.4.3** Retry on 500, 502, 503, 504 (server errors)
+- [x] **3.2.4.4** Do not retry on 400, 401, 403 (client errors)
+- [x] **3.2.4.5** Add jitter to backoff delays
 
 #### 3.2.5 Implement Transcriber Trait
-- [ ] **3.2.5.1** Implement `transcribe()` method
-- [ ] **3.2.5.2** Implement `name()` → "OpenAI Whisper"
-- [ ] **3.2.5.3** Implement `max_file_size()` → 25MB
-- [ ] **3.2.5.4** Implement `supported_formats()`
+- [x] **3.2.5.1** Implement `transcribe()` method
+- [x] **3.2.5.2** Implement `name()` → "OpenAI Whisper"
+- [x] **3.2.5.3** Implement `max_file_size()` → 25MB
+- [x] **3.2.5.4** Implement `supported_formats()`
 
 #### 3.2.6 Testing
-- [ ] **3.2.6.1** Add unit tests with mocked responses (wiremock)
-- [ ] **3.2.6.2** Add integration test with real API (optional, requires key)
-- [ ] **3.2.6.3** Test error handling for various failure modes
+- [x] **3.2.6.1** Add unit tests with mocked responses (wiremock)
+- [x] **3.2.6.2** Add integration test with real API (optional, requires key)
+- [x] **3.2.6.3** Test error handling for various failure modes
 
 ### 3.3 Google Gemini Provider (`src/transcribe/gemini.rs`)
 
 #### 3.3.1 Basic Setup
-- [ ] **3.3.1.1** Define `GeminiClient` struct:
+- [x] **3.3.1.1** Define `GeminiClient` struct:
   ```rust
   pub struct GeminiClient {
       client: reqwest::Client,
@@ -496,42 +496,42 @@
       model: String,  // gemini-2.0-flash
   }
   ```
-- [ ] **3.3.1.2** Define API endpoints:
+- [x] **3.3.1.2** Define API endpoints:
   ```rust
   const GENERATE_CONTENT_URL: &str = 
       "https://generativelanguage.googleapis.com/v1beta/models";
   const FILES_UPLOAD_URL: &str = 
       "https://generativelanguage.googleapis.com/upload/v1beta/files";
   ```
-- [ ] **3.3.1.3** Implement `GeminiClient::new()` with config validation
+- [x] **3.3.1.3** Implement `GeminiClient::new()` with config validation
 
 #### 3.3.2 Files API (for large files >20MB)
-- [ ] **3.3.2.1** Implement `upload_file()`:
+- [x] **3.3.2.1** Implement `upload_file()`:
   ```rust
   async fn upload_file(&self, path: &Path) -> Result<String>  // Returns file URI
   ```
-- [ ] **3.3.2.2** Build upload request with resumable upload
-- [ ] **3.3.2.3** Parse upload response for file URI
-- [ ] **3.3.2.4** Implement `get_file_status()` to check processing
-- [ ] **3.3.2.5** Implement `delete_file()` for cleanup
+- [x] **3.3.2.2** Build upload request with resumable upload
+- [x] **3.3.2.3** Parse upload response for file URI
+- [x] **3.3.2.4** Implement `get_file_status()` to check processing
+- [x] **3.3.2.5** Implement `delete_file()` for cleanup
 
 #### 3.3.3 Generate Content API
-- [ ] **3.3.3.1** Build request for inline audio (< 20MB):
+- [x] **3.3.3.1** Build request for inline audio (< 20MB):
   ```rust
   async fn transcribe_inline(&self, chunk: &AudioChunk) -> Result<TranscriptSegment>
   ```
-- [ ] **3.3.3.2** Build request for uploaded file:
+- [x] **3.3.3.2** Build request for uploaded file:
   ```rust
   async fn transcribe_file(&self, file_uri: &str) -> Result<TranscriptSegment>
   ```
-- [ ] **3.3.3.3** Construct prompt for transcription:
+- [x] **3.3.3.3** Construct prompt for transcription:
   ```
   Transcribe this audio with timestamps in the format:
   [MM:SS] Speaker: Text
   
   Include speaker identification if multiple speakers detected.
   ```
-- [ ] **3.3.3.4** Define request body structure:
+- [x] **3.3.3.4** Define request body structure:
   ```rust
   #[derive(Serialize)]
   struct GenerateContentRequest {
@@ -554,7 +554,7 @@
   ```
 
 #### 3.3.4 Response Parsing
-- [ ] **3.3.4.1** Parse Gemini response:
+- [x] **3.3.4.1** Parse Gemini response:
   ```rust
   #[derive(Deserialize)]
   struct GenerateContentResponse {
@@ -566,71 +566,71 @@
       content: CandidateContent,
   }
   ```
-- [ ] **3.3.4.2** Extract text from response
-- [ ] **3.3.4.3** Parse timestamps from text (regex: `\[(\d{2}):(\d{2})\]`)
-- [ ] **3.3.4.4** Parse speaker labels if present
-- [ ] **3.3.4.5** Convert to `TranscriptSegment`
+- [x] **3.3.4.2** Extract text from response
+- [x] **3.3.4.3** Parse timestamps from text (regex: `\[(\d{2}):(\d{2})\]`)
+- [x] **3.3.4.4** Parse speaker labels if present
+- [x] **3.3.4.5** Convert to `TranscriptSegment`
 
 #### 3.3.5 Special Features
-- [ ] **3.3.5.1** Implement speaker diarization prompt:
+- [x] **3.3.5.1** Implement speaker diarization prompt:
   ```
   Identify and label each speaker as Speaker 1, Speaker 2, etc.
   ```
-- [ ] **3.3.5.2** Implement emotion detection prompt:
+- [x] **3.3.5.2** Implement emotion detection prompt:
   ```
   Note the emotional tone (happy, sad, angry, neutral) for each segment.
   ```
-- [ ] **3.3.5.3** Implement translation prompt:
+- [x] **3.3.5.3** Implement translation prompt:
   ```
   Transcribe and translate to {target_language}.
   ```
 
 #### 3.3.6 Retry Logic
-- [ ] **3.3.6.1** Implement exponential backoff (same as Whisper)
-- [ ] **3.3.6.2** Handle Gemini-specific error codes
-- [ ] **3.3.6.3** Handle quota exceeded errors
+- [x] **3.3.6.1** Implement exponential backoff (same as Whisper)
+- [x] **3.3.6.2** Handle Gemini-specific error codes
+- [x] **3.3.6.3** Handle quota exceeded errors
 
 #### 3.3.7 Implement Transcriber Trait
-- [ ] **3.3.7.1** Implement `transcribe()` method
-- [ ] **3.3.7.2** Implement `name()` → "Google Gemini"
-- [ ] **3.3.7.3** Implement `max_file_size()` → determine based on inline vs file
-- [ ] **3.3.7.4** Implement `supported_formats()`
+- [x] **3.3.7.1** Implement `transcribe()` method
+- [x] **3.3.7.2** Implement `name()` → "Google Gemini"
+- [x] **3.3.7.3** Implement `max_file_size()` → determine based on inline vs file
+- [x] **3.3.7.4** Implement `supported_formats()`
 
 #### 3.3.8 Testing
-- [ ] **3.3.8.1** Add unit tests with mocked responses
-- [ ] **3.3.8.2** Add integration test (optional)
-- [ ] **3.3.8.3** Test file upload/delete lifecycle
+- [x] **3.3.8.1** Add unit tests with mocked responses
+- [x] **3.3.8.2** Add integration test (optional)
+- [x] **3.3.8.3** Test file upload/delete lifecycle
 
 ### 3.4 Concurrent Processing
 
-- [ ] **3.4.1** Create `TranscriptionOrchestrator`:
+- [x] **3.4.1** Create `TranscriptionOrchestrator`:
   ```rust
   pub struct TranscriptionOrchestrator {
       transcriber: Box<dyn Transcriber>,
       concurrency: usize,
   }
   ```
-- [ ] **3.4.2** Implement concurrent chunk processing:
+- [x] **3.4.2** Implement concurrent chunk processing:
   ```rust
   pub async fn process_chunks(
       &self,
       chunks: Vec<AudioChunk>,
   ) -> Result<Vec<TranscriptSegment>>
   ```
-- [ ] **3.4.3** Use `tokio::sync::Semaphore` for concurrency control
-- [ ] **3.4.4** Use `futures::stream::FuturesUnordered` for parallel execution
-- [ ] **3.4.5** Maintain chunk order in results
-- [ ] **3.4.6** Add progress bar with indicatif:
+- [x] **3.4.3** Use `tokio::sync::Semaphore` for concurrency control
+- [x] **3.4.4** Use `futures::stream::FuturesUnordered` for parallel execution
+- [x] **3.4.5** Maintain chunk order in results
+- [x] **3.4.6** Add progress bar with indicatif:
   ```rust
   let pb = ProgressBar::new(chunks.len() as u64);
   pb.set_style(ProgressStyle::default_bar()
       .template("{spinner} [{bar:40}] {pos}/{len} chunks")?);
   ```
-- [ ] **3.4.7** Handle partial failures:
+- [x] **3.4.7** Handle partial failures:
   - Continue on individual chunk failure
   - Collect errors for reporting
   - Option to retry failed chunks
-- [ ] **3.4.8** Add timing metrics (total time, per-chunk avg)
+- [x] **3.4.8** Add timing metrics (total time, per-chunk avg)
 
 ---
 

@@ -83,3 +83,51 @@ Completed entire Phase 2 (Audio Processing) of the autosub CLI tool. Implemented
 - Chunking respects API limits: 25MB for Whisper, 20MB for Gemini, 60s max duration
 - `extract_audio_with_progress()` parses FFmpeg's `-progress pipe:1` output for real-time progress
 - Tests gracefully skip when FFmpeg is unavailable or broken
+
+---
+
+## Session 3 - 2026-01-10 ~15:00 UTC
+
+### Status: COMPLETED
+
+**Tasks Attempted:**
+- 3.1.1-3.1.4: Transcriber Trait & Types — ✅ Success
+- 3.2.1-3.2.6: OpenAI Whisper Provider — ✅ Success
+- 3.3.1-3.3.8: Google Gemini Provider — ✅ Success
+- 3.4.1-3.4.8: Concurrent Processing Orchestrator — ✅ Success
+
+**Summary:**
+Completed entire Phase 3 (Transcription Providers) of the autosub CLI tool. Implemented the Transcriber trait with full type definitions, OpenAI Whisper API client with multipart form uploads and retry logic, Google Gemini Audio client with inline/file upload support and timestamp parsing, and a concurrent processing orchestrator using tokio semaphores and FuturesUnordered. All 49 tests pass and clippy is clean.
+
+### What Works Now
+- `cargo build` compiles successfully
+- `cargo test` runs 49 tests, all passing
+- `cargo clippy` has no warnings
+- Transcriber trait: `Transcriber`, `TranscriptSegment`, `TranscriptionResult`, `WordTimestamp`
+- Factory function: `create_transcriber(provider, config)` creates the appropriate client
+- Whisper client: `WhisperClient::new()`, `with_model()`, `with_language()`, `with_prompt()`
+- Whisper API: multipart form upload, verbose_json response parsing, retry with backoff
+- Gemini client: `GeminiClient::new()`, `with_language()`, `with_diarization()`
+- Gemini API: inline audio (< 20MB), Files API upload (>= 20MB), timestamp parsing from `[MM:SS]` format
+- Orchestrator: `TranscriptionOrchestrator::new()`, `process_chunks()`, `process_chunks_with_retry()`
+- Concurrent processing with configurable concurrency, semaphore-based limiting
+- Progress bar with indicatif showing chunk processing progress
+- Chunk order maintained in results, partial failure handling
+
+### Issues Encountered
+- Rust's `regex` crate doesn't support lookahead (`(?=...)`). Fixed by using `[^\[]+` instead of `.+?(?=\[|\z)`.
+- reqwest's `Form` is consumed on send, so retry logic needed restructuring to rebuild form on each attempt.
+
+### Next Steps for Next Agent
+1. **Phase 4.1-4.4**: Implement subtitle formatters (SRT, VTT, JSON) — Note: These were already implemented in Phase 1, need to verify integration
+2. **Phase 4.5**: Implement post-processing (segment merging, line splitting, timing adjustments)
+3. **Phase 4.6**: Implement transcript to subtitle conversion
+4. **Phase 6.1**: Create main pipeline orchestration in `src/lib.rs`
+
+### Technical Notes
+- Whisper uses `verbose_json` response format for segment timestamps
+- Gemini returns timestamps in `[MM:SS] Text` format, parsed with regex
+- Orchestrator uses `Arc<dyn Transcriber>` to share transcriber across concurrent tasks
+- `FuturesUnordered` provides efficient parallel execution without strict ordering
+- Semaphore limits concurrent API requests to avoid rate limiting
+- Chunk timestamps are adjusted relative to their position in the original audio

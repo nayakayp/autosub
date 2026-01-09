@@ -41,6 +41,15 @@ dirs = "5"
 # Async trait
 async-trait = "0.1"
 
+# Base64 encoding for Gemini API
+base64 = "0.22"
+
+# Futures utilities for concurrent processing
+futures = "0.3"
+
+# Regex for parsing Gemini timestamps
+regex = "1"
+
 [dev-dependencies]
 tokio-test = "0.4"
 wiremock = "0.6"
