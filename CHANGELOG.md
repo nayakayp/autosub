@@ -86,7 +86,7 @@ Completed entire Phase 2 (Audio Processing) of the autosub CLI tool. Implemented
 
 ---
 
-## Session 3 - 2026-01-10 ~15:00 UTC
+## Session 3 - 2026-01-10 ~15:00 UTC (Transcription Providers)
 
 ### Status: COMPLETED
 
@@ -131,3 +131,49 @@ Completed entire Phase 3 (Transcription Providers) of the autosub CLI tool. Impl
 - `FuturesUnordered` provides efficient parallel execution without strict ordering
 - Semaphore limits concurrent API requests to avoid rate limiting
 - Chunk timestamps are adjusted relative to their position in the original audio
+
+---
+
+## Session 4 - 2026-01-10 ~20:00 UTC (Subtitle Generation)
+
+### Status: COMPLETED
+
+**Tasks Attempted:**
+- 4.1.1-4.1.3: Subtitle Module Structure — ✅ Success (verified existing implementation)
+- 4.2.1-4.2.7: SRT Formatter — ✅ Success (verified existing implementation)
+- 4.3.1-4.3.7: VTT Formatter — ✅ Success (verified existing implementation)
+- 4.4.1-4.4.5: JSON Formatter — ✅ Success (verified existing implementation)
+- 4.5.1-4.5.4: Post-Processing — ✅ Success (new implementation)
+- 4.6.1-4.6.4: Transcript to Subtitle Conversion — ✅ Success (new implementation)
+
+**Summary:**
+Completed entire Phase 4 (Subtitle Generation). Verified that subtitle formatters (SRT, VTT, JSON) were already implemented in Phase 1. Implemented new post-processing module with segment merging, line splitting at sentence boundaries, timing adjustments (min/max duration, min gap), and filler word removal. Created transcript-to-subtitle conversion with speaker label formatting and overlapping timestamp fixes. All 64 tests pass and clippy is clean.
+
+### What Works Now
+- `cargo build` compiles successfully
+- `cargo test` runs 64 tests, all passing
+- `cargo clippy` has no warnings
+- Post-processing: `post_process()`, `PostProcessConfig`
+- Segment merging: respects same-speaker, configurable threshold (default 1s)
+- Line splitting: smart split at sentence/comma/space boundaries, proportional time distribution
+- Timing adjustments: min gap (100ms), min duration (1s), max duration (7s)
+- Filler word removal: um, uh, er, like, you know, I mean
+- Transcript conversion: `convert_to_subtitles()`, `quick_convert()`, `convert_with_defaults()`
+- Speaker label formatting: `[Speaker] text` format
+- Overlapping timestamp fix: adjusts previous entry's end time
+
+### Issues Encountered
+- None significant. Fixed a borrow-after-move error in line splitting by capturing split count before consuming iterator.
+
+### Next Steps for Next Agent
+1. **Phase 6.1**: Create main pipeline orchestration in `src/lib.rs`
+2. **Phase 6.2**: Add error handling and user experience improvements
+3. **Phase 6.3**: Integration testing with real API calls
+4. **Optional Phase 5**: Translation support (can be deferred)
+
+### Technical Notes
+- Post-processing is optional via `PostProcessConfig`; `None` skips all post-processing
+- `convert_with_defaults()` applies standard post-processing, `quick_convert()` skips it
+- Line splitting distributes time proportionally across split segments
+- Speaker labels are prefixed to text as `[Speaker] text` format
+- Deferred: VTT cue settings, JSON word-level timestamps, automatic punctuation

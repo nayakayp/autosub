@@ -637,11 +637,11 @@
 ## Phase 4: Subtitle Generation
 
 **Target: Week 4**
-**Status:** 🔴 Not Started
+**Status:** 🟢 Complete
 
 ### 4.1 Subtitle Module Structure (`src/subtitle/mod.rs`)
 
-- [ ] **4.1.1** Define `SubtitleEntry`:
+- [x] **4.1.1** Define `SubtitleEntry`:
   ```rust
   pub struct SubtitleEntry {
       pub index: usize,
@@ -651,21 +651,21 @@
       pub speaker: Option<String>,
   }
   ```
-- [ ] **4.1.2** Define `SubtitleFormatter` trait:
+- [x] **4.1.2** Define `SubtitleFormatter` trait:
   ```rust
   pub trait SubtitleFormatter {
       fn format(&self, entries: &[SubtitleEntry]) -> String;
       fn extension(&self) -> &'static str;
   }
   ```
-- [ ] **4.1.3** Create factory function:
+- [x] **4.1.3** Create factory function:
   ```rust
   pub fn create_formatter(format: OutputFormat) -> Box<dyn SubtitleFormatter>
   ```
 
 ### 4.2 SRT Formatter (`src/subtitle/srt.rs`)
 
-- [ ] **4.2.1** Implement SRT format:
+- [x] **4.2.1** Implement SRT format:
   ```
   1
   00:00:01,500 --> 00:00:04,000
@@ -675,16 +675,16 @@
   00:00:04,500 --> 00:00:07,000
   Today we're going to learn...
   ```
-- [ ] **4.2.2** Implement timestamp formatting: `HH:MM:SS,mmm`
-- [ ] **4.2.3** Handle multi-line text (preserve line breaks)
-- [ ] **4.2.4** Escape special characters if needed
-- [ ] **4.2.5** Add blank line between entries
-- [ ] **4.2.6** Implement `SubtitleFormatter` trait
-- [ ] **4.2.7** Add unit tests
+- [x] **4.2.2** Implement timestamp formatting: `HH:MM:SS,mmm`
+- [x] **4.2.3** Handle multi-line text (preserve line breaks)
+- [x] **4.2.4** Escape special characters if needed
+- [x] **4.2.5** Add blank line between entries
+- [x] **4.2.6** Implement `SubtitleFormatter` trait
+- [x] **4.2.7** Add unit tests
 
 ### 4.3 VTT Formatter (`src/subtitle/vtt.rs`)
 
-- [ ] **4.3.1** Implement WebVTT format:
+- [x] **4.3.1** Implement WebVTT format:
   ```
   WEBVTT
   
@@ -694,16 +694,16 @@
   00:00:04.500 --> 00:00:07.000
   Today we're going to learn...
   ```
-- [ ] **4.3.2** Add `WEBVTT` header
-- [ ] **4.3.3** Implement timestamp formatting: `HH:MM:SS.mmm`
-- [ ] **4.3.4** Support optional cue identifiers
-- [ ] **4.3.5** Support cue settings (position, alignment) - optional
-- [ ] **4.3.6** Implement `SubtitleFormatter` trait
-- [ ] **4.3.7** Add unit tests
+- [x] **4.3.2** Add `WEBVTT` header
+- [x] **4.3.3** Implement timestamp formatting: `HH:MM:SS.mmm`
+- [x] **4.3.4** Support optional cue identifiers
+- [ ] **4.3.5** Support cue settings (position, alignment) - optional (deferred)
+- [x] **4.3.6** Implement `SubtitleFormatter` trait
+- [x] **4.3.7** Add unit tests
 
 ### 4.4 JSON Formatter (`src/subtitle/json.rs`)
 
-- [ ] **4.4.1** Define JSON output structure:
+- [x] **4.4.1** Define JSON output structure:
   ```rust
   #[derive(Serialize)]
   struct JsonOutput {
@@ -732,37 +732,37 @@
       words: Option<Vec<JsonWord>>,
   }
   ```
-- [ ] **4.4.2** Implement pretty-printed JSON output
-- [ ] **4.4.3** Include word-level timestamps if available
-- [ ] **4.4.4** Implement `SubtitleFormatter` trait
-- [ ] **4.4.5** Add unit tests
+- [x] **4.4.2** Implement pretty-printed JSON output
+- [ ] **4.4.3** Include word-level timestamps if available (deferred)
+- [x] **4.4.4** Implement `SubtitleFormatter` trait
+- [x] **4.4.5** Add unit tests
 
 ### 4.5 Post-Processing
 
-- [ ] **4.5.1** Implement segment merging:
+- [x] **4.5.1** Implement segment merging:
   - Merge segments < 1 second apart
   - Configurable threshold
-- [ ] **4.5.2** Implement line splitting:
+- [x] **4.5.2** Implement line splitting:
   - Split text > 42 characters per line
   - Split at sentence boundaries when possible
-- [ ] **4.5.3** Implement timing adjustments:
+- [x] **4.5.3** Implement timing adjustments:
   - Add minimum gap between subtitles (100ms)
   - Extend short subtitles to minimum duration (1s)
-- [ ] **4.5.4** Remove filler words option (um, uh, etc.)
-- [ ] **4.5.5** Add punctuation if missing
+- [x] **4.5.4** Remove filler words option (um, uh, etc.)
+- [ ] **4.5.5** Add punctuation if missing (deferred)
 
 ### 4.6 Transcript to Subtitle Conversion
 
-- [ ] **4.6.1** Implement `convert_to_subtitles()`:
+- [x] **4.6.1** Implement `convert_to_subtitles()`:
   ```rust
   pub fn convert_to_subtitles(
       segments: Vec<TranscriptSegment>,
       config: PostProcessConfig,
   ) -> Vec<SubtitleEntry>
   ```
-- [ ] **4.6.2** Handle speaker labels (prefix text or separate line)
-- [ ] **4.6.3** Number entries sequentially
-- [ ] **4.6.4** Validate no overlapping timestamps
+- [x] **4.6.2** Handle speaker labels (prefix text or separate line)
+- [x] **4.6.3** Number entries sequentially
+- [x] **4.6.4** Validate no overlapping timestamps
 
 ---
 

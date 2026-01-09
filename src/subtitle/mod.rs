@@ -1,6 +1,11 @@
+pub mod convert;
 pub mod json;
+pub mod postprocess;
 pub mod srt;
 pub mod vtt;
+
+pub use convert::{convert_to_subtitles, convert_with_defaults, quick_convert};
+pub use postprocess::{post_process, PostProcessConfig};
 
 use crate::config::OutputFormat;
 use std::time::Duration;
