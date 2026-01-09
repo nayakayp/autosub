@@ -197,11 +197,11 @@
 ## Phase 2: Audio Processing
 
 **Target: Week 2**
-**Status:** 🔴 Not Started
+**Status:** 🟢 Complete
 
 ### 2.1 Audio Module Structure (`src/audio/mod.rs`)
 
-- [ ] **2.1.1** Create module exports:
+- [x] **2.1.1** Create module exports:
   ```rust
   pub mod extract;
   pub mod vad;
@@ -211,7 +211,7 @@
   pub use vad::*;
   pub use chunk::*;
   ```
-- [ ] **2.1.2** Define common types:
+- [x] **2.1.2** Define common types:
   ```rust
   pub struct AudioMetadata {
       pub duration: Duration,
@@ -233,18 +233,18 @@
 
 ### 2.2 FFmpeg Audio Extraction (`src/audio/extract.rs`)
 
-- [ ] **2.2.1** Check ffmpeg is installed:
+- [x] **2.2.1** Check ffmpeg is installed:
   ```rust
   pub fn check_ffmpeg() -> Result<()> {
       Command::new("ffmpeg").arg("-version").output()?;
       Ok(())
   }
   ```
-- [ ] **2.2.2** Implement `extract_audio()`:
+- [x] **2.2.2** Implement `extract_audio()`:
   ```rust
   pub async fn extract_audio(input: &Path, output: &Path) -> Result<AudioMetadata>
   ```
-- [ ] **2.2.3** FFmpeg command construction:
+- [x] **2.2.3** FFmpeg command construction:
   ```
   ffmpeg -i input.mp4 -vn -acodec pcm_s16le -ar 16000 -ac 1 output.wav
   ```
@@ -252,26 +252,26 @@
   - `-acodec pcm_s16le`: 16-bit PCM
   - `-ar 16000`: 16kHz sample rate
   - `-ac 1`: Mono
-- [ ] **2.2.4** Handle ffmpeg stderr for progress/errors
-- [ ] **2.2.5** Parse output duration from ffmpeg
-- [ ] **2.2.6** Create temp directory for extracted audio
-- [ ] **2.2.7** Add tests with sample video files
-- [ ] **2.2.8** Handle different input formats: MP4, MKV, AVI, MOV, MP3, WAV
+- [x] **2.2.4** Handle ffmpeg stderr for progress/errors
+- [x] **2.2.5** Parse output duration from ffmpeg
+- [x] **2.2.6** Create temp directory for extracted audio
+- [x] **2.2.7** Add tests with sample video files
+- [x] **2.2.8** Handle different input formats: MP4, MKV, AVI, MOV, MP3, WAV
 
 ### 2.3 Voice Activity Detection (`src/audio/vad.rs`)
 
-- [ ] **2.3.1** Implement WAV file reading with `hound`:
+- [x] **2.3.1** Implement WAV file reading with `hound`:
   ```rust
   pub fn read_wav(path: &Path) -> Result<(Vec<i16>, WavSpec)>
   ```
-- [ ] **2.3.2** Implement RMS energy calculation:
+- [x] **2.3.2** Implement RMS energy calculation:
   ```rust
   fn calculate_rms(samples: &[i16]) -> f64 {
       let sum: f64 = samples.iter().map(|&s| (s as f64).powi(2)).sum();
       (sum / samples.len() as f64).sqrt()
   }
   ```
-- [ ] **2.3.3** Implement energy-based VAD:
+- [x] **2.3.3** Implement energy-based VAD:
   ```rust
   pub fn detect_speech_regions(
       samples: &[i16],
@@ -279,7 +279,7 @@
       config: VadConfig,
   ) -> Vec<SpeechRegion>
   ```
-- [ ] **2.3.4** Define `VadConfig`:
+- [x] **2.3.4** Define `VadConfig`:
   ```rust
   pub struct VadConfig {
       pub frame_duration_ms: u32,      // Default: 30ms
@@ -289,18 +289,18 @@
       pub padding_ms: u32,             // Default: 200ms
   }
   ```
-- [ ] **2.3.5** Implement percentile-based threshold calculation:
+- [x] **2.3.5** Implement percentile-based threshold calculation:
   - Calculate RMS for all frames
   - Use 20th percentile as silence threshold
-- [ ] **2.3.6** Implement region merging:
+- [x] **2.3.6** Implement region merging:
   - Merge regions closer than `padding_ms`
   - Split regions longer than `max_speech_duration_ms`
-- [ ] **2.3.7** Add debug logging for VAD decisions
-- [ ] **2.3.8** Add unit tests with sample audio
+- [x] **2.3.7** Add debug logging for VAD decisions
+- [x] **2.3.8** Add unit tests with sample audio
 
 ### 2.4 Audio Chunking (`src/audio/chunk.rs`)
 
-- [ ] **2.4.1** Define chunk configuration:
+- [x] **2.4.1** Define chunk configuration:
   ```rust
   pub struct ChunkConfig {
       pub max_duration: Duration,    // API limit
@@ -308,7 +308,7 @@
       pub output_format: AudioFormat, // WAV, FLAC, MP3
   }
   ```
-- [ ] **2.4.2** Implement `chunk_audio()`:
+- [x] **2.4.2** Implement `chunk_audio()`:
   ```rust
   pub async fn chunk_audio(
       source: &Path,
@@ -316,20 +316,20 @@
       config: ChunkConfig,
   ) -> Result<Vec<AudioChunk>>
   ```
-- [ ] **2.4.3** Extract each region using ffmpeg:
+- [x] **2.4.3** Extract each region using ffmpeg:
   ```
   ffmpeg -i input.wav -ss START -to END -c copy chunk_N.wav
   ```
-- [ ] **2.4.4** Handle Whisper API limits:
+- [x] **2.4.4** Handle Whisper API limits:
   - Split chunks > 25MB
   - Track chunk boundaries for reassembly
-- [ ] **2.4.5** Handle Gemini API limits:
+- [x] **2.4.5** Handle Gemini API limits:
   - Inline for < 20MB
   - Files API for >= 20MB
-- [ ] **2.4.6** Implement parallel chunk extraction with tokio
-- [ ] **2.4.7** Add progress bar for chunking
-- [ ] **2.4.8** Cleanup temporary files on error/completion
-- [ ] **2.4.9** Add tests for edge cases:
+- [x] **2.4.6** Implement parallel chunk extraction with tokio
+- [x] **2.4.7** Add progress bar for chunking
+- [x] **2.4.8** Cleanup temporary files on error/completion
+- [x] **2.4.9** Add tests for edge cases:
   - Very short audio
   - Very long audio
   - Silent audio
