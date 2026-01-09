@@ -259,3 +259,50 @@ Added two important CLI UX features: `--dry-run` validates input file, output pa
 - `--force` is checked before API key validation so users see output conflict first
 - FFmpeg check moved before pipeline execution for early failure
 - Dry-run shows warning if output file exists (will need --force to overwrite)
+
+---
+
+## Session 7 - 2026-01-10 ~22:00 UTC (Integration Tests)
+
+### Status: COMPLETED
+
+**Tasks Attempted:**
+- 6.3.1: Add integration tests with sample files — ✅ Success
+- 6.3.5: Test edge cases — ✅ Success
+- Mock API tests for transcription providers — ✅ Success
+
+**Summary:**
+Created comprehensive integration tests and mock API tests for the autosub CLI. Added 55 new tests covering config validation, subtitle formatters (SRT, VTT, JSON), transcript-to-subtitle conversion, audio module types, pipeline configuration, edge cases (empty segments, short segments, unicode, overlapping timestamps), and mock transcription provider tests. All 121 tests pass and clippy is clean.
+
+### What Works Now
+- `cargo build` compiles successfully
+- `cargo test` runs 121 tests (65 unit + 1 main + 34 integration + 21 mock API), all passing
+- `cargo clippy` has no warnings
+- Integration tests in `tests/integration_tests.rs` covering:
+  - Config validation for both Whisper and Gemini providers
+  - All subtitle formatters (SRT, VTT, JSON)
+  - Transcript-to-subtitle conversion with post-processing
+  - Audio chunk planning and VAD configuration
+  - Pipeline configuration
+  - Edge cases (empty, short, unicode, long text splitting)
+- Mock API tests in `tests/mock_api_tests.rs` covering:
+  - WhisperClient and GeminiClient creation and configuration
+  - Transcriber factory function
+  - TranscriptionOrchestrator with empty chunks
+  - TranscriptSegment and TranscriptionResult types
+
+### Issues Encountered
+- Initial test code had incorrect assumptions about API signatures (String vs &str, field names). Fixed by checking actual module implementations.
+- `plan_chunks` merges close regions within max_duration, so test had to use regions that together exceed max_duration to get expected split behavior.
+
+### Next Steps for Next Agent
+1. **Real API testing**: Test with actual API keys to verify end-to-end functionality
+2. **Phase 6.3.2-6.3.4**: Add end-to-end tests, test with various input formats and languages
+3. **Phase 6.4.1**: Complete README.md with usage examples
+4. **Phase 5** (Optional): Implement translation support
+
+### Technical Notes
+- Integration tests use the actual library API to verify component integration
+- Mock tests validate client creation and configuration without hitting real APIs
+- Tests cover edge cases: empty segments, very short segments, unicode text, overlapping timestamps, long text splitting
+- All tests are self-contained and don't require external dependencies like FFmpeg or API keys

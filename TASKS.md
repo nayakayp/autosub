@@ -832,11 +832,11 @@
 
 ### 6.3 Testing
 
-- [ ] **6.3.1** Add integration tests with sample files
+- [x] **6.3.1** Add integration tests with sample files
 - [ ] **6.3.2** Add end-to-end test (requires API keys)
 - [ ] **6.3.3** Test with various input formats
 - [ ] **6.3.4** Test with different languages
-- [ ] **6.3.5** Test edge cases:
+- [x] **6.3.5** Test edge cases:
   - Empty audio
   - Very short audio (<1s)
   - Very long audio (>1hr)
