@@ -12,7 +12,7 @@ use tracing::{debug, warn};
 
 /// Gemini API endpoint for content generation.
 const GENERATE_CONTENT_URL: &str =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 /// Gemini Files API endpoint for uploading large files.
 const FILES_UPLOAD_URL: &str = "https://generativelanguage.googleapis.com/upload/v1beta/files";
@@ -106,6 +106,7 @@ impl GeminiClient {
 
         let request = GenerateContentRequest {
             contents: vec![Content {
+                role: "user".to_string(),
                 parts: vec![
                     Part::Text {
                         text: self.build_prompt(),
@@ -166,6 +167,7 @@ impl GeminiClient {
     async fn transcribe_file(&self, file_uri: &str, chunk: &AudioChunk) -> Result<Transcript> {
         let request = GenerateContentRequest {
             contents: vec![Content {
+                role: "user".to_string(),
                 parts: vec![
                     Part::Text {
                         text: self.build_prompt(),
@@ -418,6 +420,7 @@ struct GenerateContentRequest {
 
 #[derive(Serialize)]
 struct Content {
+    role: String,
     parts: Vec<Part>,
 }
 

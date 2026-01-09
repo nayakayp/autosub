@@ -425,7 +425,7 @@ Verified the entire CLI pipeline works correctly end-to-end. Tested with both Ge
 - Both keys appear to be expired or invalid. User needs to regenerate keys.
 
 ### Next Steps for Next Agent
-1. **Regenerate API keys**: User must provide valid OPENAI_API_KEY and/or GEMINI_API_KEY
+1. **Retry**: use OPENAI_API_KEY and/or GEMINI_API_KEY. If invalid lookup the newest documentation how to implement it.
 2. **Complete 6.3.2-6.3.4**: Once keys are valid, test end-to-end with various inputs and languages
 3. **Optional**: Phase 5 translation support
 4. **Optional**: 6.5.3 install script, 6.5.4 Homebrew formula

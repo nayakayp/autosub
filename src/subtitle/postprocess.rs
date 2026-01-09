@@ -146,24 +146,40 @@ fn smart_split(text: &str, max_length: usize) -> Vec<String> {
     let mut remaining = text.to_string();
 
     while !remaining.is_empty() {
-        if remaining.len() <= max_length {
+        // Count characters, not bytes, for proper UTF-8 handling
+        let char_count = remaining.chars().count();
+        
+        if char_count <= max_length {
             result.push(remaining.trim().to_string());
             break;
         }
 
-        // Find best split point within max_length
-        let search_range = &remaining[..max_length.min(remaining.len())];
+        // Find byte index for max_length characters
+        let byte_limit = remaining
+            .char_indices()
+            .nth(max_length)
+            .map(|(i, _)| i)
+            .unwrap_or(remaining.len());
+        
+        // Find best split point within max_length characters
+        let search_range = &remaining[..byte_limit];
 
         // Priority: sentence end (. ! ?) > comma > space
         let split_pos = find_best_split(search_range);
 
         if let Some(pos) = split_pos {
+            // Find the byte position after the split character
+            let next_char_start = remaining[pos..]
+                .char_indices()
+                .nth(1)
+                .map(|(i, _)| pos + i)
+                .unwrap_or(remaining.len());
             result.push(remaining[..=pos].trim().to_string());
-            remaining = remaining[pos + 1..].to_string();
+            remaining = remaining[next_char_start..].to_string();
         } else {
-            // No good split point, force split at max_length
-            result.push(remaining[..max_length].trim().to_string());
-            remaining = remaining[max_length..].to_string();
+            // No good split point, force split at max_length characters
+            result.push(remaining[..byte_limit].trim().to_string());
+            remaining = remaining[byte_limit..].to_string();
         }
     }
 
