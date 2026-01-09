@@ -395,3 +395,44 @@ Added GitHub Actions workflows for CI and releases. CI workflow runs on push/PR 
 - FFmpeg installed via package managers: apt (Linux), brew (macOS), choco (Windows)
 - Release uses `softprops/action-gh-release@v1` for creating releases
 - Cross-compilation for aarch64-linux requires `gcc-aarch64-linux-gnu` linker
+
+---
+
+## Session 10 - 2026-01-10 ~01:52 UTC (End-to-End API Testing Attempt)
+
+### Status: PARTIAL
+
+**Tasks Attempted:**
+- 6.3.2: End-to-end API testing with sample.mp4 — ⚠️ Partial (API keys invalid)
+- Build/test/clippy verification — ✅ Success
+
+**Summary:**
+Verified the entire CLI pipeline works correctly end-to-end. Tested with both Gemini and Whisper providers using sample.mp4 (Japanese audio). The pipeline successfully: (1) extracts audio via FFmpeg, (2) chunks audio for API limits, (3) makes API calls with retry logic, and (4) provides clear error messages. However, both API keys in the environment are invalid/expired, so actual transcription could not be verified.
+
+### What Works Now
+- `cargo build` compiles successfully
+- `cargo test` runs 121 tests, all passing
+- `cargo clippy` has no warnings
+- Full pipeline executes: Audio Extraction → Chunking → API Call → Error Handling
+- `--dry-run` validates configuration correctly
+- Retry logic works (3 attempts with exponential backoff)
+- Clear error messages for invalid API keys
+- Temp file cleanup works on both success and failure
+
+### Issues Encountered
+- **GEMINI_API_KEY**: Returns "API key not valid" (400 Bad Request)
+- **OPENAI_API_KEY**: Returns "Incorrect API key provided" (401 Unauthorized)
+- Both keys appear to be expired or invalid. User needs to regenerate keys.
+
+### Next Steps for Next Agent
+1. **Regenerate API keys**: User must provide valid OPENAI_API_KEY and/or GEMINI_API_KEY
+2. **Complete 6.3.2-6.3.4**: Once keys are valid, test end-to-end with various inputs and languages
+3. **Optional**: Phase 5 translation support
+4. **Optional**: 6.5.3 install script, 6.5.4 Homebrew formula
+
+### Technical Notes
+- Pipeline tested with sample.mp4 (13.2s Japanese audio, 11MB)
+- FFmpeg correctly extracts 16-bit PCM WAV at 16kHz mono (422KB chunk)
+- Whisper retry: 3 attempts with 1s, 2s delays (exponential backoff)
+- Gemini uses inline audio data for files < 20MB
+- Error messages include full API response for debugging
