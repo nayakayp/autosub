@@ -826,8 +826,8 @@
   - FFmpeg not found → installation instructions
   - Invalid API key → how to set up
   - Rate limited → retry suggestion
-- [ ] **6.2.2** Add `--dry-run` flag to validate without processing
-- [ ] **6.2.3** Add `--force` flag to overwrite existing output
+- [x] **6.2.2** Add `--dry-run` flag to validate without processing
+- [x] **6.2.3** Add `--force` flag to overwrite existing output
 - [x] **6.2.4** Colored terminal output for status messages (via tracing)
 
 ### 6.3 Testing

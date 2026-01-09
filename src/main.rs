@@ -47,6 +47,14 @@ struct Cli {
     /// Suppress progress bars and output
     #[arg(short, long)]
     quiet: bool,
+
+    /// Validate input without processing (check dependencies, API keys, etc.)
+    #[arg(long)]
+    dry_run: bool,
+
+    /// Overwrite output file if it already exists
+    #[arg(long)]
+    force: bool,
 }
 
 fn init_logging(verbose: bool) {
@@ -95,11 +103,23 @@ async fn main() -> Result<()> {
     // Derive output path if not specified
     let output = cli.output.unwrap_or_else(|| derive_output_path(&cli.input, &format));
 
+    // Check if output file exists and --force not specified
+    if output.exists() && !cli.force && !cli.dry_run {
+        anyhow::bail!(
+            "Output file already exists: {}\nUse --force to overwrite.",
+            output.display()
+        );
+    }
+
     // Load and validate configuration
     let config = Config::load().context("Failed to load configuration")?;
     config
         .validate(provider)
         .context("Configuration validation failed")?;
+
+    // Check FFmpeg availability
+    autosub::audio::check_ffmpeg()
+        .context("FFmpeg not found. Install it with: brew install ffmpeg (macOS) or apt install ffmpeg (Linux)")?;
 
     if !cli.quiet {
         info!("Input:    {}", cli.input.display());
@@ -110,6 +130,25 @@ async fn main() -> Result<()> {
         if let Some(ref target) = cli.translate {
             info!("Translate to: {}", target);
         }
+    }
+
+    // Dry run mode - validate everything but don't process
+    if cli.dry_run {
+        println!();
+        println!("✓ Dry run validation successful:");
+        println!("  Input file:    {} (exists)", cli.input.display());
+        println!("  Output file:   {}", output.display());
+        println!("  Format:        {}", format);
+        println!("  Provider:      {} (API key set)", provider);
+        println!("  Language:      {}", cli.language);
+        println!("  Concurrency:   {}", cli.concurrency);
+        println!("  FFmpeg:        available");
+        if output.exists() {
+            println!("  ⚠ Output file exists (will be overwritten with --force)");
+        }
+        println!();
+        println!("Run without --dry-run to process the file.");
+        return Ok(());
     }
 
     // Setup Ctrl+C handler for graceful cancellation

@@ -223,3 +223,39 @@ Completed Phase 6.1 (Pipeline Orchestration) of the autosub CLI tool. Created a 
 - Pipeline config is separate from global Config for flexibility
 - `generate_subtitles_with_cancel()` supports explicit cancellation token for programmatic use
 - Added `tempfile` and `ctrlc` dependencies to Cargo.toml
+
+---
+
+## Session 6 - 2026-01-09 ~17:30 UTC (CLI UX Improvements)
+
+### Status: COMPLETED
+
+**Tasks Attempted:**
+- 6.2.2: Add `--dry-run` flag — ✅ Success
+- 6.2.3: Add `--force` flag — ✅ Success
+
+**Summary:**
+Added two important CLI UX features: `--dry-run` validates input file, output path, API keys, and FFmpeg availability without processing. `--force` allows overwriting existing output files. Also moved FFmpeg check earlier in main.rs for faster failure. All 66 tests pass and clippy is clean.
+
+### What Works Now
+- `cargo build` compiles successfully
+- `cargo test` runs 66 tests, all passing
+- `cargo clippy` has no warnings
+- `--dry-run` validates: input file exists, output path, format, provider, API key set, FFmpeg available
+- `--force` allows overwriting existing output files
+- Without `--force`, refuses to overwrite existing files with clear message
+
+### Issues Encountered
+- API keys are not set in the shell environment, so could not test actual API calls. Dry-run correctly validates this.
+
+### Next Steps for Next Agent
+1. **Real API testing**: Test with actual API keys to verify end-to-end functionality
+2. **Phase 6.3**: Add integration tests
+3. **Phase 6.4.1**: Complete README.md with usage examples
+4. **Phase 5** (Optional): Implement translation support
+
+### Technical Notes
+- `--dry-run` exits early with success after validation, prints a summary
+- `--force` is checked before API key validation so users see output conflict first
+- FFmpeg check moved before pipeline execution for early failure
+- Dry-run shows warning if output file exists (will need --force to overwrite)
