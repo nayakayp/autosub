@@ -6,7 +6,7 @@ A blazingly fast CLI tool for generating subtitles from video and audio files us
 
 ## Demo
 
-> 📺 [Watch Demo Video](https://github.com/nayakayp/autosub/blob/main/Autosub%20Demo.mp4?raw=true)
+https://github.com/user-attachments/assets/5c43da27-cb5a-41b7-ab50-7054c8e542bb
 
 ## Features
 
