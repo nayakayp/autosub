@@ -2,10 +2,10 @@ use crate::audio::{
     check_ffmpeg, cleanup_chunks, create_chunks, extract_audio, get_audio_duration, plan_chunks,
     AudioChunk, ChunkConfig,
 };
-use crate::config::{Config, OutputFormat, Provider};
+use crate::config::{Config, OutputFormat};
 use crate::error::{AutosubError, Result};
 use crate::subtitle::{convert_with_defaults, create_formatter, PostProcessConfig, SubtitleEntry};
-use crate::transcribe::{GeminiClient, Transcriber, TranscriptionOrchestrator, WhisperClient};
+use crate::transcribe::{GeminiClient, Transcriber, TranscriptionOrchestrator};
 use crate::translate::create_translator;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::fs;
@@ -19,8 +19,6 @@ use tracing::{debug, info, warn};
 /// Configuration for the subtitle generation pipeline.
 #[derive(Debug, Clone)]
 pub struct PipelineConfig {
-    /// Transcription provider to use.
-    pub provider: Provider,
     /// Output subtitle format.
     pub format: OutputFormat,
     /// Source language code.
@@ -38,7 +36,6 @@ pub struct PipelineConfig {
 impl Default for PipelineConfig {
     fn default() -> Self {
         Self {
-            provider: Provider::default(),
             format: OutputFormat::default(),
             language: "en".to_string(),
             translate_to: None,
@@ -238,11 +235,8 @@ pub async fn generate_subtitles_with_cancel(
         pb
     });
 
-    // Get chunk config for provider
-    let chunk_config = match pipeline_config.provider {
-        Provider::Whisper => ChunkConfig::whisper(),
-        Provider::Gemini => ChunkConfig::gemini(),
-    };
+    // Get chunk config for Gemini
+    let chunk_config = ChunkConfig::gemini();
 
     // Get audio duration
     let audio_duration = get_audio_duration(&audio_path).unwrap_or(audio_metadata.duration);
@@ -276,34 +270,20 @@ pub async fn generate_subtitles_with_cancel(
     // Stage 3: Transcription
     // ═══════════════════════════════════════════════════════════════════════
     info!(
-        "Stage 3/4: Transcribing with {} (concurrency: {})",
-        pipeline_config.provider, pipeline_config.concurrency
+        "Stage 3/4: Transcribing with Gemini (concurrency: {})",
+        pipeline_config.concurrency
     );
     let transcription_start = Instant::now();
 
     // Create transcriber with language set
-    let transcriber: Box<dyn Transcriber> = match pipeline_config.provider {
-        Provider::Whisper => {
-            let api_key = config.openai_api_key.as_ref().ok_or_else(|| {
-                AutosubError::Config(
-                    "OpenAI API key not set. Set OPENAI_API_KEY environment variable.".to_string(),
-                )
-            })?;
-            Box::new(
-                WhisperClient::new(api_key.clone()).with_language(pipeline_config.language.clone()),
-            )
-        }
-        Provider::Gemini => {
-            let api_key = config.gemini_api_key.as_ref().ok_or_else(|| {
-                AutosubError::Config(
-                    "Gemini API key not set. Set GEMINI_API_KEY environment variable.".to_string(),
-                )
-            })?;
-            Box::new(
-                GeminiClient::new(api_key.clone()).with_language(pipeline_config.language.clone()),
-            )
-        }
-    };
+    let api_key = config.gemini_api_key.as_ref().ok_or_else(|| {
+        AutosubError::Config(
+            "Gemini API key not set. Set GEMINI_API_KEY environment variable.".to_string(),
+        )
+    })?;
+    let transcriber: Box<dyn Transcriber> = Box::new(
+        GeminiClient::new(api_key.clone()).with_language(pipeline_config.language.clone()),
+    );
 
     // Create orchestrator
     let orchestrator = TranscriptionOrchestrator::new(transcriber, pipeline_config.concurrency)
@@ -464,7 +444,7 @@ pub async fn generate_subtitles_with_cancel(
         chunks_processed: transcription_stats.successful_chunks,
         subtitle_entries: subtitle_entries.len(),
         audio_duration,
-        provider: pipeline_config.provider.to_string(),
+        provider: "gemini".to_string(),
         translated_to,
     };
 
@@ -537,7 +517,6 @@ mod tests {
     #[test]
     fn test_pipeline_config_default() {
         let config = PipelineConfig::default();
-        assert_eq!(config.provider, Provider::Whisper);
         assert_eq!(config.format, OutputFormat::Srt);
         assert_eq!(config.language, "en");
         assert_eq!(config.concurrency, 4);
@@ -555,7 +534,7 @@ mod tests {
             chunks_processed: 5,
             subtitle_entries: 50,
             audio_duration: Duration::from_secs(300),
-            provider: "whisper".to_string(),
+            provider: "gemini".to_string(),
             translated_to: None,
         };
 

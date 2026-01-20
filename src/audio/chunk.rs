@@ -26,26 +26,11 @@ pub struct ChunkConfig {
 
 impl Default for ChunkConfig {
     fn default() -> Self {
-        Self {
-            max_duration: Duration::from_secs(60),
-            max_file_size: 25 * 1024 * 1024,
-            target_duration: Duration::from_secs(30),
-            padding: Duration::from_millis(200),
-        }
+        Self::gemini()
     }
 }
 
 impl ChunkConfig {
-    /// Configuration optimized for Whisper API.
-    pub fn whisper() -> Self {
-        Self {
-            max_duration: Duration::from_secs(60),
-            max_file_size: 25 * 1024 * 1024,
-            target_duration: Duration::from_secs(30),
-            padding: Duration::from_millis(200),
-        }
-    }
-
     /// Configuration optimized for Gemini API.
     pub fn gemini() -> Self {
         Self {
@@ -238,12 +223,6 @@ mod tests {
         let config = ChunkConfig::default();
         assert!(config.max_duration > Duration::ZERO);
         assert!(config.max_file_size > 0);
-    }
-
-    #[test]
-    fn test_chunk_config_whisper() {
-        let config = ChunkConfig::whisper();
-        assert_eq!(config.max_file_size, 25 * 1024 * 1024);
     }
 
     #[test]

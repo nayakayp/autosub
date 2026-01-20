@@ -4,7 +4,7 @@
 //! external API keys.
 
 use autosub::audio::{AudioMetadata, ChunkConfig, SpeechRegion};
-use autosub::config::{Config, OutputFormat, Provider};
+use autosub::config::{Config, OutputFormat};
 use autosub::pipeline::PipelineConfig;
 use autosub::subtitle::{
     convert_to_subtitles, convert_with_defaults, create_formatter, json::JsonFormatter,
@@ -25,21 +25,8 @@ mod config_tests {
     #[test]
     fn test_config_default_values() {
         let config = Config::default();
-        assert_eq!(config.default_provider, Provider::Whisper);
         assert_eq!(config.default_format, OutputFormat::Srt);
         assert_eq!(config.concurrency, 4);
-    }
-
-    #[test]
-    fn test_config_provider_api_key_validation() {
-        let mut config = Config::default();
-        config.openai_api_key = None;
-
-        let result = config.validate(Provider::Whisper);
-        assert!(result.is_err());
-
-        config.openai_api_key = Some("test-key".to_string());
-        assert!(config.validate(Provider::Whisper).is_ok());
     }
 
     #[test]
@@ -47,11 +34,11 @@ mod config_tests {
         let mut config = Config::default();
         config.gemini_api_key = None;
 
-        let result = config.validate(Provider::Gemini);
+        let result = config.validate();
         assert!(result.is_err());
 
         config.gemini_api_key = Some("test-key".to_string());
-        assert!(config.validate(Provider::Gemini).is_ok());
+        assert!(config.validate().is_ok());
     }
 
     #[test]
@@ -118,7 +105,7 @@ mod subtitle_formatter_tests {
         let formatter = JsonFormatter {
             source_file: Some("test.mp4".to_string()),
             language: Some("en".to_string()),
-            provider: Some("whisper".to_string()),
+            provider: Some("gemini".to_string()),
         };
         let entries = sample_entries();
         let output = formatter.format(&entries);
@@ -315,14 +302,6 @@ mod audio_tests {
     }
 
     #[test]
-    fn test_chunk_config_whisper_defaults() {
-        let config = ChunkConfig::whisper();
-
-        assert_eq!(config.max_duration, Duration::from_secs(60));
-        assert_eq!(config.max_file_size, 25 * 1024 * 1024);
-    }
-
-    #[test]
     fn test_chunk_config_gemini_defaults() {
         let config = ChunkConfig::gemini();
 
@@ -395,7 +374,6 @@ mod pipeline_config_tests {
     fn test_pipeline_config_default() {
         let config = PipelineConfig::default();
 
-        assert_eq!(config.provider, Provider::Whisper);
         assert_eq!(config.format, OutputFormat::Srt);
         assert_eq!(config.language, "en");
         assert!(config.concurrency > 0);
@@ -404,7 +382,6 @@ mod pipeline_config_tests {
     #[test]
     fn test_pipeline_config_custom() {
         let config = PipelineConfig {
-            provider: Provider::Gemini,
             format: OutputFormat::Vtt,
             language: "ja".to_string(),
             translate_to: Some("en".to_string()),
@@ -413,7 +390,6 @@ mod pipeline_config_tests {
             show_progress: true,
         };
 
-        assert_eq!(config.provider, Provider::Gemini);
         assert_eq!(config.format, OutputFormat::Vtt);
         assert_eq!(config.language, "ja");
         assert_eq!(config.translate_to, Some("en".to_string()));

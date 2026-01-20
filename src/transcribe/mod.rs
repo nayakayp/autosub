@@ -1,13 +1,11 @@
 pub mod gemini;
 pub mod orchestrator;
-pub mod whisper;
 
 pub use gemini::GeminiClient;
 pub use orchestrator::TranscriptionOrchestrator;
-pub use whisper::WhisperClient;
 
 use crate::audio::AudioChunk;
-use crate::config::{Config, Provider};
+use crate::config::Config;
 use crate::error::Result;
 use async_trait::async_trait;
 use std::time::Duration;
@@ -67,7 +65,7 @@ pub struct TranscriptionResult {
     pub duration: Duration,
 }
 
-/// Trait for transcription providers (Whisper, Gemini, etc.).
+/// Trait for transcription providers.
 #[async_trait]
 pub trait Transcriber: Send + Sync {
     /// Transcribe an audio chunk and return the transcript.
@@ -83,26 +81,14 @@ pub trait Transcriber: Send + Sync {
     fn supported_formats(&self) -> &[&str];
 }
 
-/// Factory function to create a transcriber based on the provider.
-pub fn create_transcriber(provider: Provider, config: &Config) -> Result<Box<dyn Transcriber>> {
-    match provider {
-        Provider::Whisper => {
-            let api_key = config.openai_api_key.as_ref().ok_or_else(|| {
-                crate::error::AutosubError::Config(
-                    "OpenAI API key not set. Set OPENAI_API_KEY environment variable.".to_string(),
-                )
-            })?;
-            Ok(Box::new(WhisperClient::new(api_key.clone())))
-        }
-        Provider::Gemini => {
-            let api_key = config.gemini_api_key.as_ref().ok_or_else(|| {
-                crate::error::AutosubError::Config(
-                    "Gemini API key not set. Set GEMINI_API_KEY environment variable.".to_string(),
-                )
-            })?;
-            Ok(Box::new(GeminiClient::new(api_key.clone())))
-        }
-    }
+/// Factory function to create a transcriber.
+pub fn create_transcriber(config: &Config) -> Result<Box<dyn Transcriber>> {
+    let api_key = config.gemini_api_key.as_ref().ok_or_else(|| {
+        crate::error::AutosubError::Config(
+            "Gemini API key not set. Set GEMINI_API_KEY environment variable.".to_string(),
+        )
+    })?;
+    Ok(Box::new(GeminiClient::new(api_key.clone())))
 }
 
 #[cfg(test)]

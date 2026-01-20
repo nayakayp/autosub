@@ -2,9 +2,7 @@
 
 > Automatic subtitle generation using AI, written in Rust.
 
-A blazingly fast CLI tool for generating subtitles from video and audio files using:
-- **OpenAI Whisper API** — Fast, accurate transcription
-- **Google Gemini Audio** — Transcription, translation, speaker diarization
+A blazingly fast CLI tool for generating subtitles from video and audio files using **Google Gemini Audio** for transcription, translation, and speaker diarization.
 
 ## Features
 
@@ -36,32 +34,25 @@ cp target/release/autosub /usr/local/bin/
 
 - **Rust 1.70+** (for building)
 - **[FFmpeg](https://ffmpeg.org/)** must be installed and available in PATH
-- API key for your chosen provider
+- Google Gemini API key
 
 ## Setup
 
-### API Keys
+### API Key
 
-Set your API keys as environment variables:
+Set your Gemini API key as an environment variable:
 
 ```bash
-# For OpenAI Whisper (default provider)
-export OPENAI_API_KEY="sk-..."
-
-# For Google Gemini
 export GEMINI_API_KEY="..."
 ```
 
-You can get API keys from:
-- OpenAI: https://platform.openai.com/api-keys
-- Google Gemini: https://aistudio.google.com/apikey
+You can get an API key from: https://aistudio.google.com/apikey
 
 ### Optional: Config File
 
 Create `~/.config/autosub/config.toml` for persistent settings:
 
 ```toml
-default_provider = "whisper"  # or "gemini"
 default_format = "srt"        # or "vtt", "json"
 concurrency = 4
 ```
@@ -71,11 +62,8 @@ concurrency = 4
 ### Basic Examples
 
 ```bash
-# Basic usage with Whisper (default)
+# Basic usage
 autosub video.mp4 -o subtitles.srt
-
-# Use Google Gemini
-autosub video.mp4 -o subtitles.srt --provider gemini
 
 # Output WebVTT format
 autosub video.mp4 -o subtitles.vtt --format vtt
@@ -111,7 +99,6 @@ Arguments:
 Options:
   -o, --output <FILE>       Output subtitle file (auto-derived if not specified)
   -f, --format <FORMAT>     Output format: srt, vtt, json [default: srt]
-  -p, --provider <NAME>     Transcription: gemini, whisper [default: whisper]
   -l, --language <CODE>     Source language code [default: en]
       --translate <CODE>    Translate to language (optional)
   -c, --concurrency <N>     Concurrent API requests [default: 4]
@@ -142,8 +129,8 @@ Any format supported by FFmpeg, including:
 
 1. **Audio Extraction** — Extracts audio from video using FFmpeg
 2. **Voice Activity Detection** — Identifies speech regions
-3. **Chunking** — Splits audio for API limits (25MB for Whisper, 20MB for Gemini)
-4. **Transcription** — Sends chunks to chosen API in parallel
+3. **Chunking** — Splits audio for API limits (20MB for Gemini)
+4. **Transcription** — Sends chunks to Gemini API in parallel
 5. **Post-Processing** — Merges segments, splits long lines, adjusts timing
 6. **Formatting** — Outputs in chosen subtitle format
 
@@ -167,8 +154,8 @@ choco install ffmpeg
 
 Ensure your API key is exported in the current shell:
 ```bash
-echo $OPENAI_API_KEY  # Should show your key
-export OPENAI_API_KEY="sk-..."  # Set if empty
+echo $GEMINI_API_KEY  # Should show your key
+export GEMINI_API_KEY="..."  # Set if empty
 ```
 
 ### Rate limiting
@@ -182,7 +169,6 @@ autosub video.mp4 -o subs.srt --concurrency 2
 
 | Provider | Pricing |
 |----------|---------|
-| OpenAI Whisper | ~$0.006/minute |
 | Google Gemini | Based on token usage ([details](https://ai.google.dev/gemini-api/docs/pricing)) |
 
 ## License

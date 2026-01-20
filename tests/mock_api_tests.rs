@@ -3,64 +3,9 @@
 //! These tests validate client creation and configuration without hitting real endpoints.
 
 use autosub::audio::{AudioChunk, SpeechRegion};
-use autosub::transcribe::{GeminiClient, Transcriber, TranscriptionOrchestrator, WhisperClient};
+use autosub::transcribe::{GeminiClient, Transcriber, TranscriptionOrchestrator};
 use std::path::PathBuf;
 use std::time::Duration;
-
-// ============================================================================
-// Whisper API Mock Tests
-// ============================================================================
-
-mod whisper_tests {
-    use super::*;
-
-    fn create_test_chunk() -> AudioChunk {
-        AudioChunk {
-            region: SpeechRegion {
-                start: Duration::from_secs(0),
-                end: Duration::from_secs(5),
-            },
-            path: PathBuf::from("/tmp/nonexistent_test.wav"),
-            index: 0,
-        }
-    }
-
-    #[tokio::test]
-    async fn test_whisper_client_creation() {
-        let client = WhisperClient::new("test-api-key".to_string());
-        assert_eq!(client.name(), "OpenAI Whisper");
-    }
-
-    #[tokio::test]
-    async fn test_whisper_max_file_size() {
-        let client = WhisperClient::new("test-api-key".to_string());
-        assert_eq!(client.max_file_size(), 25 * 1024 * 1024); // 25MB
-    }
-
-    #[tokio::test]
-    async fn test_whisper_client_with_language() {
-        let client = WhisperClient::new("test-api-key".to_string()).with_language("ja".to_string());
-        assert_eq!(client.name(), "OpenAI Whisper");
-    }
-
-    #[tokio::test]
-    async fn test_whisper_client_with_prompt() {
-        let client = WhisperClient::new("test-api-key".to_string())
-            .with_prompt("Custom vocabulary: AI, ML".to_string());
-        assert_eq!(client.name(), "OpenAI Whisper");
-    }
-
-    #[tokio::test]
-    async fn test_whisper_handles_missing_file() {
-        let client = WhisperClient::new("test-api-key".to_string());
-        let chunk = create_test_chunk();
-
-        let result = client.transcribe(&chunk).await;
-
-        // Should fail because the file doesn't exist
-        assert!(result.is_err());
-    }
-}
 
 // ============================================================================
 // Gemini API Mock Tests
@@ -126,7 +71,7 @@ mod orchestrator_tests {
 
     #[tokio::test]
     async fn test_orchestrator_creation() {
-        let client: Box<dyn Transcriber> = Box::new(WhisperClient::new("test-api-key".to_string()));
+        let client: Box<dyn Transcriber> = Box::new(GeminiClient::new("test-api-key".to_string()));
         let _orchestrator = TranscriptionOrchestrator::new(client, 4);
 
         // Just verify it compiles and creates successfully
@@ -135,7 +80,7 @@ mod orchestrator_tests {
 
     #[tokio::test]
     async fn test_orchestrator_empty_chunks() {
-        let client: Box<dyn Transcriber> = Box::new(WhisperClient::new("test-api-key".to_string()));
+        let client: Box<dyn Transcriber> = Box::new(GeminiClient::new("test-api-key".to_string()));
         let orchestrator = TranscriptionOrchestrator::new(client, 4);
 
         let chunks: Vec<AudioChunk> = vec![];
@@ -202,34 +147,16 @@ mod response_parsing_tests {
 // ============================================================================
 
 mod factory_tests {
-    use autosub::config::{Config, Provider};
+    use autosub::config::Config;
     use autosub::transcribe::create_transcriber;
-
-    #[test]
-    fn test_create_whisper_transcriber() {
-        let mut config = Config::default();
-        config.openai_api_key = Some("test-key".to_string());
-
-        let transcriber = create_transcriber(Provider::Whisper, &config).unwrap();
-        assert_eq!(transcriber.name(), "OpenAI Whisper");
-    }
 
     #[test]
     fn test_create_gemini_transcriber() {
         let mut config = Config::default();
         config.gemini_api_key = Some("test-key".to_string());
 
-        let transcriber = create_transcriber(Provider::Gemini, &config).unwrap();
+        let transcriber = create_transcriber(&config).unwrap();
         assert_eq!(transcriber.name(), "Google Gemini");
-    }
-
-    #[test]
-    fn test_create_transcriber_missing_whisper_key() {
-        let mut config = Config::default();
-        config.openai_api_key = None;
-
-        let result = create_transcriber(Provider::Whisper, &config);
-        assert!(result.is_err());
     }
 
     #[test]
@@ -237,7 +164,7 @@ mod factory_tests {
         let mut config = Config::default();
         config.gemini_api_key = None;
 
-        let result = create_transcriber(Provider::Gemini, &config);
+        let result = create_transcriber(&config);
         assert!(result.is_err());
     }
 }

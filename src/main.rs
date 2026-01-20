@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use autosub::config::{Config, OutputFormat, Provider};
+use autosub::config::{Config, OutputFormat};
 use autosub::{print_summary, PipelineConfig};
 use clap::Parser;
 use std::path::{Path, PathBuf};
@@ -11,9 +11,7 @@ use tracing_subscriber::FmtSubscriber;
 #[derive(Parser)]
 #[command(name = "autosub")]
 #[command(version, about = "Automatic subtitle generation using AI")]
-#[command(
-    long_about = "Generate subtitles from video/audio files using OpenAI Whisper or Google Gemini APIs."
-)]
+#[command(long_about = "Generate subtitles from video/audio files using Google Gemini API.")]
 struct Cli {
     /// Input video/audio file
     input: PathBuf,
@@ -25,10 +23,6 @@ struct Cli {
     /// Output format: srt, vtt, json
     #[arg(short, long, default_value = "srt")]
     format: String,
-
-    /// Transcription provider: whisper, gemini
-    #[arg(short, long, default_value = "whisper")]
-    provider: String,
 
     /// Source language code (e.g., en, ja, es)
     #[arg(short, long, default_value = "en")]
@@ -93,12 +87,6 @@ async fn main() -> Result<()> {
     // Parse format
     let format: OutputFormat = cli.format.parse().map_err(|e: String| anyhow::anyhow!(e))?;
 
-    // Parse provider
-    let provider: Provider = cli
-        .provider
-        .parse()
-        .map_err(|e: String| anyhow::anyhow!(e))?;
-
     // Derive output path if not specified
     let output = cli
         .output
@@ -115,7 +103,7 @@ async fn main() -> Result<()> {
     // Load and validate configuration
     let config = Config::load().context("Failed to load configuration")?;
     config
-        .validate(provider)
+        .validate()
         .context("Configuration validation failed")?;
 
     // Check FFmpeg availability
@@ -126,7 +114,6 @@ async fn main() -> Result<()> {
         info!("Input:    {}", cli.input.display());
         info!("Output:   {}", output.display());
         info!("Format:   {}", format);
-        info!("Provider: {}", provider);
         info!("Language: {}", cli.language);
         if let Some(ref target) = cli.translate {
             info!("Translate to: {}", target);
@@ -140,10 +127,10 @@ async fn main() -> Result<()> {
         println!("  Input file:    {} (exists)", cli.input.display());
         println!("  Output file:   {}", output.display());
         println!("  Format:        {}", format);
-        println!("  Provider:      {} (API key set)", provider);
         println!("  Language:      {}", cli.language);
         println!("  Concurrency:   {}", cli.concurrency);
         println!("  FFmpeg:        available");
+        println!("  Gemini API:    configured");
         if output.exists() {
             println!("  ⚠ Output file exists (will be overwritten with --force)");
         }
@@ -168,7 +155,6 @@ async fn main() -> Result<()> {
 
     // Build pipeline configuration
     let pipeline_config = PipelineConfig {
-        provider,
         format,
         language: cli.language.clone(),
         translate_to: cli.translate.clone(),
