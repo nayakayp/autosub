@@ -4,6 +4,10 @@
 
 A blazingly fast CLI tool for generating subtitles from video and audio files using **Google Gemini Audio** for transcription, translation, and speaker diarization.
 
+## Demo
+
+https://github.com/user-attachments/assets/Autosub-Demo.mp4
+
 ## Features
 
 - 🎯 **Interactive mode** - Guided setup wizard for easy use
