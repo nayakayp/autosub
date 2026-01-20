@@ -6,7 +6,7 @@ A blazingly fast CLI tool for generating subtitles from video and audio files us
 
 ## Demo
 
-https://github.com/user-attachments/assets/5c43da27-cb5a-41b7-ab50-7054c8e542bb
+https://github.com/user-attachments/assets/dba6b150-8b17-4222-a26d-7c6bc071ec4f
 
 ## Features
 
