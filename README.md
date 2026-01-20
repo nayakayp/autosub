@@ -6,6 +6,7 @@ A blazingly fast CLI tool for generating subtitles from video and audio files us
 
 ## Features
 
+- 🎯 **Interactive mode** - Guided setup wizard for easy use
 - 🚀 Fast concurrent processing with configurable parallelism
 - 🎯 Multiple output formats: SRT, VTT, JSON
 - 🔊 Smart voice activity detection (VAD)
@@ -36,6 +37,36 @@ cp target/release/autosub /usr/local/bin/
 - **[FFmpeg](https://ffmpeg.org/)** must be installed and available in PATH
 - Google Gemini API key
 
+## Quick Start
+
+### Interactive Mode (Recommended)
+
+Simply run without arguments for a guided experience:
+
+```bash
+autosub
+```
+
+The wizard will:
+1. Help you set up your Gemini API key (if not configured)
+2. List media files in your current directory to choose from
+3. Let you select source language
+4. Optionally set up translation
+5. Choose output format (SRT, VTT, JSON)
+
+### Command Line Mode
+
+```bash
+# Basic usage
+autosub video.mp4 -o subtitles.srt
+
+# Specify source language
+autosub anime.mkv -o subs.srt --language ja
+
+# With translation
+autosub video.mp4 -o subtitles.srt --language ja --translate en
+```
+
 ## Setup
 
 ### API Key
@@ -46,6 +77,8 @@ Set your Gemini API key as an environment variable:
 export GEMINI_API_KEY="..."
 ```
 
+Or run `autosub` in interactive mode - it will prompt you to enter and optionally save your API key.
+
 You can get an API key from: https://aistudio.google.com/apikey
 
 ### Optional: Config File
@@ -53,15 +86,17 @@ You can get an API key from: https://aistudio.google.com/apikey
 Create `~/.config/autosub/config.toml` for persistent settings:
 
 ```toml
+gemini_api_key = "your-api-key-here"
 default_format = "srt"        # or "vtt", "json"
 concurrency = 4
 ```
 
-## Usage
-
-### Basic Examples
+## Usage Examples
 
 ```bash
+# Interactive mode (recommended for first-time users)
+autosub
+
 # Basic usage
 autosub video.mp4 -o subtitles.srt
 
@@ -71,16 +106,15 @@ autosub video.mp4 -o subtitles.vtt --format vtt
 # Specify source language (Japanese)
 autosub anime.mkv -o subs.srt --language ja
 
+# Translate Japanese to English
+autosub anime.mkv -o subs.srt --language ja --translate en
+
 # High concurrency for faster processing
 autosub long-video.mp4 -o subs.srt --concurrency 8
 
 # Enable verbose logging
 autosub video.mp4 -o subs.srt -v
-```
 
-### Validation and Safety
-
-```bash
 # Validate without processing (dry-run)
 autosub video.mp4 --dry-run
 
@@ -91,10 +125,10 @@ autosub video.mp4 -o existing.srt --force
 ## CLI Reference
 
 ```
-autosub <INPUT> [OPTIONS]
+autosub [INPUT] [OPTIONS]
 
 Arguments:
-  <INPUT>  Input video/audio file
+  [INPUT]  Input video/audio file (omit for interactive mode)
 
 Options:
   -o, --output <FILE>       Output subtitle file (auto-derived if not specified)
@@ -105,6 +139,7 @@ Options:
       --dry-run             Validate inputs without processing
       --force               Overwrite existing output file
   -v, --verbose             Enable verbose logging
+  -q, --quiet               Suppress progress bars and output
   -h, --help                Print help
   -V, --version             Print version
 ```
@@ -157,6 +192,8 @@ Ensure your API key is exported in the current shell:
 echo $GEMINI_API_KEY  # Should show your key
 export GEMINI_API_KEY="..."  # Set if empty
 ```
+
+Or run `autosub` without arguments to use the interactive setup.
 
 ### Rate limiting
 

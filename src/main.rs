@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use autosub::config::{Config, OutputFormat};
+use autosub::interactive::run_interactive_wizard;
 use autosub::{print_summary, PipelineConfig};
 use clap::Parser;
 use std::path::{Path, PathBuf};
@@ -11,10 +12,10 @@ use tracing_subscriber::FmtSubscriber;
 #[derive(Parser)]
 #[command(name = "autosub")]
 #[command(version, about = "Automatic subtitle generation using AI")]
-#[command(long_about = "Generate subtitles from video/audio files using Google Gemini API.")]
+#[command(long_about = "Generate subtitles from video/audio files using Google Gemini API.\n\nRun without arguments for interactive mode.")]
 struct Cli {
-    /// Input video/audio file
-    input: PathBuf,
+    /// Input video/audio file (omit for interactive mode)
+    input: Option<PathBuf>,
 
     /// Output subtitle file (defaults to input name with appropriate extension)
     #[arg(short, long)]
@@ -77,11 +78,18 @@ fn derive_output_path(input: &Path, format: &OutputFormat) -> PathBuf {
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
+    // If no input provided, run interactive mode
+    if cli.input.is_none() {
+        return run_interactive_mode().await;
+    }
+
+    let input = cli.input.unwrap();
+
     init_logging(cli.verbose);
 
     // Validate input file exists
-    if !cli.input.exists() {
-        anyhow::bail!("Input file not found: {}", cli.input.display());
+    if !input.exists() {
+        anyhow::bail!("Input file not found: {}", input.display());
     }
 
     // Parse format
@@ -90,7 +98,7 @@ async fn main() -> Result<()> {
     // Derive output path if not specified
     let output = cli
         .output
-        .unwrap_or_else(|| derive_output_path(&cli.input, &format));
+        .unwrap_or_else(|| derive_output_path(&input, &format));
 
     // Check if output file exists and --force not specified
     if output.exists() && !cli.force && !cli.dry_run {
@@ -111,7 +119,7 @@ async fn main() -> Result<()> {
         .context("FFmpeg not found. Install it with: brew install ffmpeg (macOS) or apt install ffmpeg (Linux)")?;
 
     if !cli.quiet {
-        info!("Input:    {}", cli.input.display());
+        info!("Input:    {}", input.display());
         info!("Output:   {}", output.display());
         info!("Format:   {}", format);
         info!("Language: {}", cli.language);
@@ -124,7 +132,7 @@ async fn main() -> Result<()> {
     if cli.dry_run {
         println!();
         println!("✓ Dry run validation successful:");
-        println!("  Input file:    {} (exists)", cli.input.display());
+        println!("  Input file:    {} (exists)", input.display());
         println!("  Output file:   {}", output.display());
         println!("  Format:        {}", format);
         println!("  Language:      {}", cli.language);
@@ -139,13 +147,56 @@ async fn main() -> Result<()> {
         return Ok(());
     }
 
+    run_pipeline(&input, &output, &config, cli.language, cli.translate, format, cli.concurrency, !cli.quiet).await
+}
+
+async fn run_interactive_mode() -> Result<()> {
+    let result = run_interactive_wizard()?;
+
+    // Check FFmpeg availability
+    autosub::audio::check_ffmpeg()
+        .context("FFmpeg not found. Install it with: brew install ffmpeg (macOS) or apt install ffmpeg (Linux)")?;
+
+    // Check if output exists
+    if result.output.exists() {
+        use dialoguer::Confirm;
+        if !Confirm::new()
+            .with_prompt(format!("Output file {} already exists. Overwrite?", result.output.display()))
+            .default(false)
+            .interact()?
+        {
+            anyhow::bail!("Cancelled - output file exists");
+        }
+    }
+
+    run_pipeline(
+        &result.input,
+        &result.output,
+        &result.config,
+        result.pipeline_config.language,
+        result.pipeline_config.translate_to,
+        result.pipeline_config.format,
+        result.pipeline_config.concurrency,
+        result.pipeline_config.show_progress,
+    ).await
+}
+
+async fn run_pipeline(
+    input: &Path,
+    output: &Path,
+    config: &Config,
+    language: String,
+    translate_to: Option<String>,
+    format: OutputFormat,
+    concurrency: usize,
+    show_progress: bool,
+) -> Result<()> {
     // Setup Ctrl+C handler for graceful cancellation
     let cancelled = Arc::new(AtomicBool::new(false));
     let cancelled_clone = cancelled.clone();
 
     ctrlc::set_handler(move || {
         if cancelled_clone.load(Ordering::Relaxed) {
-            // Second Ctrl+C, force exit
             std::process::exit(1);
         }
         eprintln!("\nReceived Ctrl+C, cancelling... (press again to force quit)");
@@ -153,28 +204,26 @@ async fn main() -> Result<()> {
     })
     .ok();
 
-    // Build pipeline configuration
     let pipeline_config = PipelineConfig {
         format,
-        language: cli.language.clone(),
-        translate_to: cli.translate.clone(),
-        concurrency: cli.concurrency,
+        language,
+        translate_to,
+        concurrency,
         post_process: Some(autosub::subtitle::PostProcessConfig::default()),
-        show_progress: !cli.quiet,
+        show_progress,
     };
 
-    // Run the pipeline
     match autosub::pipeline::generate_subtitles_with_cancel(
-        &cli.input,
-        &output,
-        &config,
+        input,
+        output,
+        config,
         pipeline_config,
         cancelled,
     )
     .await
     {
         Ok(result) => {
-            if !cli.quiet {
+            if show_progress {
                 print_summary(&result);
             }
             Ok(())

@@ -1,6 +1,7 @@
 pub mod audio;
 pub mod config;
 pub mod error;
+pub mod interactive;
 pub mod pipeline;
 pub mod subtitle;
 pub mod transcribe;
