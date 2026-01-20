@@ -20,7 +20,7 @@ const FILES_UPLOAD_URL: &str = "https://generativelanguage.googleapis.com/upload
 /// Threshold for using Files API vs inline data (20 MB).
 const INLINE_SIZE_THRESHOLD: usize = 20 * 1024 * 1024;
 
-/// Maximum file size we'll handle (much larger than Whisper).
+/// Maximum file size we'll handle.
 const MAX_FILE_SIZE: usize = 200 * 1024 * 1024;
 
 /// Maximum retries for API calls.

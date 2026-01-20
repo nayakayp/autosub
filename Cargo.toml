@@ -2,7 +2,7 @@
 name = "autosub"
 version = "0.1.0"
 edition = "2021"
-description = "Automatic subtitle generation using Whisper and Gemini APIs"
+description = "Automatic subtitle generation using Google Gemini API"
 license = "MIT"
 repository = "https://github.com/example/autosub"
 

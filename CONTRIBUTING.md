@@ -72,7 +72,6 @@ src/
 │   ├── vad.rs        # Voice activity detection
 │   └── chunk.rs      # Audio chunking
 ├── transcribe/       # Transcription providers
-│   ├── whisper.rs    # OpenAI Whisper
 │   ├── gemini.rs     # Google Gemini
 │   └── orchestrator.rs
 ├── subtitle/         # Output formatting
@@ -121,7 +120,6 @@ chore: update dependencies
 For testing with real APIs, set environment variables:
 
 ```bash
-export OPENAI_API_KEY="sk-..."
 export GEMINI_API_KEY="..."
 ```
 

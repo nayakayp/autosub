@@ -14,7 +14,7 @@ pub struct ChunkConfig {
     /// Maximum chunk duration (API limit).
     pub max_duration: Duration,
 
-    /// Maximum chunk file size in bytes (for Whisper API: 25MB).
+    /// Maximum chunk file size in bytes (Gemini: 20MB).
     pub max_file_size: usize,
 
     /// Target chunk duration for optimal processing.
